@@ -1,0 +1,4 @@
+{
+  "platforms": ["android"],
+  "android": { "modules": ["vn.backhaulbid.ekyc.BackHaulBidEkycModule"] }
+}
