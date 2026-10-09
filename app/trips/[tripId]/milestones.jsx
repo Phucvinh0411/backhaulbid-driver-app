@@ -1,110 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  SafeAreaView,
-} from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import DriverMilestoneTracker from '../../components/DriverMilestoneTracker';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Redirect, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useAuth } from '@/lib/auth';
+import { isDriverSession, scopeKey } from '@/lib/sessionModel';
+import DriverMilestoneTracker from '@/components/DriverMilestoneTracker';
+import { Section, StateView } from '@/components/ui';
+import { api } from '@/lib/api';
+import { colors, radius, space, fonts } from '@/constants/theme';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://10.0.2.2:8080';
+function useLocalSearchParamsTrip() {
+  return String(useLocalSearchParams().tripId || '').toLowerCase();
+}
 
-/**
- * Screen: /trips/[tripId]/milestones
- *
- * Sử dụng: expo-router dynamic route
- * URL mẫu: /trips/uuid-here/milestones
- */
-export default function TripMilestonesScreen() {
+export default function DriverMilestoneGate() {
+  const { session, ready } = useAuth();
+  const tripId = useLocalSearchParamsTrip();
+  // Wait for the stored session; redirecting earlier would drop deep links.
+  if (!ready || !session) return null;
+  // A driver code session opens only its own trip; any other ID (old link, other trip) goes home.
+  if (!isDriverSession(session) || tripId !== session.tripId) return <Redirect href="/" />;
+  return <TripMilestonesScreen key={scopeKey(session)} />;
+}
+
+function TripMilestonesScreen() {
   const { tripId } = useLocalSearchParams();
+  const [milestones, setMilestones] = useState([]);
+  const [tripStatus, setTripStatus] = useState(null);
+  const [state, setState] = useState('loading');
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [milestones, setMilestones] = useState(null);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
+  const load = useCallback(
+    async ({ pull = false } = {}) => {
+      if (pull) setRefreshing(true);
+      try {
+        const [trip, list] = await Promise.all([api.get(`/api/v1/trips/${tripId}`), api.get(`/api/v1/trips/${tripId}/milestones`)]);
+        setTripStatus(trip?.status || null);
+        setMilestones(Array.isArray(list) ? list : list?.data || []);
+        setError('');
+        setState('ready');
+      } catch (loadError) {
+        setError(loadError.message);
+        setState((current) => (current === 'ready' ? 'ready' : 'error'));
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [tripId],
+  );
 
-  useEffect(() => {
-    if (!tripId) return;
-    fetchMilestones();
-  }, [tripId]);
-
-  const fetchMilestones = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${API_BASE_URL}/api/v1/trips/${tripId}/milestones`,
-        {
-          headers: {
-            // Trong production: lấy từ auth context / SecureStore
-            'X-User-Id':   'driver-uuid-here',
-            'X-User-Role': 'DRIVER',
-          },
-        },
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setMilestones(data);
-    } catch (err) {
-      setError(err?.message ?? 'Không thể tải danh sách cột mốc');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Đang tải hành trình...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>⚠️ {error}</Text>
-      </View>
-    );
-  }
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <DriverMilestoneTracker
-        tripId={tripId}
-        initialMilestones={milestones ?? []}
-        apiBaseUrl={API_BASE_URL}
-        authHeaders={{
-          'X-User-Id':   'driver-uuid-here',
-          'X-User-Role': 'DRIVER',
-        }}
-      />
-    </SafeAreaView>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load({ pull: true })} tintColor={colors.brand} />}
+    >
+      {notice ? (
+        <View style={styles.notice} accessibilityLiveRegion="polite">
+          <Text style={styles.noticeText}>{notice}</Text>
+        </View>
+      ) : null}
+      {state === 'loading' && <StateView kind="loading" title="Đang tải cột mốc" />}
+      {state === 'error' && <StateView kind="error" title="Không tải được cột mốc" message={error} actionLabel="Thử lại" onAction={() => load()} />}
+      {state === 'ready' && milestones.length === 0 && <StateView title="Chuyến chưa có cột mốc" message="Chủ xe chưa thiết lập cột mốc cho chuyến này." />}
+      {state === 'ready' && milestones.length > 0 && (
+        <Section title="Check-in theo thứ tự">
+          <DriverMilestoneTracker
+            tripId={tripId}
+            milestones={milestones}
+            tripStatus={tripStatus}
+            onChanged={async (message) => {
+              setNotice(message);
+              await load();
+            }}
+          />
+        </Section>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  center: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    color: '#94a3b8',
-    fontSize: 15,
-    marginTop: 12,
-  },
-  errorText: {
-    color: '#fca5a5',
-    fontSize: 15,
-    textAlign: 'center',
-    paddingHorizontal: 24,
-  },
+  screen: { flex: 1, backgroundColor: colors.canvas },
+  content: { padding: space.lg, gap: space.lg },
+  notice: { backgroundColor: colors.successSoft, borderRadius: radius.md, padding: space.md },
+  noticeText: { color: colors.success, fontFamily: fonts.semibold },
 });
