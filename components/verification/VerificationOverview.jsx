@@ -37,8 +37,8 @@ export default function VerificationOverview({ refreshKey = 0, fallback, onLoade
     {status.message ? <Text style={type.secondary}>{status.message}</Text> : null}
     {error ? <Text accessibilityRole="alert" style={[type.secondary, { color: colors.danger }]}>{error}</Text> : null}
     {verified ? ownerIdentityRows(summary).map(([label, value]) => <Row key={label} label={label} value={value} />) : null}
-    {verified && ownerHasMaskedField(summary) ? <Button label="Hiện ngày sinh" variant="secondary" onPress={() => setReveal(true)} /> : null}
-    {verified && reveal ? <Button label="Ẩn ngày sinh" variant="secondary" onPress={() => setReveal(false)} /> : null}
+    {verified && ownerHasMaskedField(summary) ? <Button label="Hiện thông tin cá nhân" variant="secondary" onPress={() => setReveal(true)} /> : null}
+    {verified && reveal ? <Button label="Ẩn thông tin cá nhân" variant="secondary" onPress={() => setReveal(false)} /> : null}
     {status.action === 'retry' && onRetry ? <Button label="Thực hiện lại" onPress={onRetry} /> : null}
     {status.action === 'refresh' ? <Button label="Cập nhật kết quả" variant="secondary" onPress={() => setGeneration((v) => v + 1)} /> : null}
   </Section>;

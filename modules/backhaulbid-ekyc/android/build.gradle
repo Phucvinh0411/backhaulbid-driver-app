@@ -3,7 +3,7 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 group = 'vn.backhaulbid.identity'
-version = '0.2.0-dev'
+version = '0.2.4-dev'
 def debugApiOrigin = System.getenv('BACKHAULBID_DEBUG_API_ORIGIN') ?: ''
 if (debugApiOrigin && !(debugApiOrigin ==~ /http:\/\/(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}\/?/)) {
   throw new GradleException('BACKHAULBID_DEBUG_API_ORIGIN must be a local IPv4 HTTP origin.')
@@ -14,7 +14,7 @@ android {
   defaultConfig {
     minSdkVersion 26
     versionCode 1
-    versionName '0.2.0-dev'
+    versionName '0.2.4-dev'
     buildConfigField 'String', 'LOCAL_TEST_API_ORIGIN', '""'
   }
   buildTypes {
@@ -22,6 +22,6 @@ android {
   }
 }
 dependencies {
-  implementation 'vn.backhaulbid.identity:ekyc-android:0.2.0-dev'
+  implementation 'vn.backhaulbid.identity:ekyc-android:0.2.4-dev'
   testImplementation 'junit:junit:4.13.2'
 }

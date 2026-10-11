@@ -1,0 +1,96 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "vn.backhaulbid.identity",
+    "module": "nfc-core",
+    "version": "0.2.0-dev",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nfc-core-0.2.0-dev.jar",
+          "url": "nfc-core-0.2.0-dev.jar",
+          "size": 288844,
+          "sha512": "ab03a81060954bdbb850df33dccdc8426e73809184c7e368e989340a6495a8007f029f961068e002628dfdb19c2685ea2c2bdfd7ca263479df4a1173437f5e71",
+          "sha256": "76402d24edd1e9a7b164953c6f026238c64432058b9fa528e471bb16d1a2ccf6",
+          "sha1": "74ef45f032b50859b5a48594775cabfe6e83b523",
+          "md5": "42d003fef77aae2b13538da813f08a72"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.bouncycastle",
+          "module": "bcprov-jdk18on",
+          "version": {
+            "requires": "1.79"
+          }
+        },
+        {
+          "group": "org.bouncycastle",
+          "module": "bcpkix-jdk18on",
+          "version": {
+            "requires": "1.79"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nfc-core-0.2.0-dev.jar",
+          "url": "nfc-core-0.2.0-dev.jar",
+          "size": 288844,
+          "sha512": "ab03a81060954bdbb850df33dccdc8426e73809184c7e368e989340a6495a8007f029f961068e002628dfdb19c2685ea2c2bdfd7ca263479df4a1173437f5e71",
+          "sha256": "76402d24edd1e9a7b164953c6f026238c64432058b9fa528e471bb16d1a2ccf6",
+          "sha1": "74ef45f032b50859b5a48594775cabfe6e83b523",
+          "md5": "42d003fef77aae2b13538da813f08a72"
+        }
+      ]
+    }
+  ]
+}

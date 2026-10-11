@@ -167,12 +167,24 @@ class BackHaulBidEkycModule : Module() {
                     output.write("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"; filename=\"$name\"\r\nContent-Type: $type\r\n\r\n".toByteArray())
                     write(); output.write("\r\n".toByteArray())
                 }
-                for (proofPart in LdsEvidencePart.entries) part(proofPart.name.lowercase(), "application/octet-stream") {
-                    EkycSdk.writeCardEvidence(handle, accountId, receipt.attemptId, proofPart, output)
+                for (proofPart in LdsEvidencePart.entries) {
+                    // DG13 is optional: a chip without it, or an unreadable DG13, is not uploaded at all.
+                    if (proofPart == LdsEvidencePart.DG13 &&
+                        !EkycSdk.hasCardEvidence(handle, accountId, receipt.attemptId, proofPart)) continue
+                    part(proofPart.name.lowercase(), "application/octet-stream") {
+                        EkycSdk.writeCardEvidence(handle, accountId, receipt.attemptId, proofPart, output)
+                    }
                 }
                 for ((name, photo) in mapOf("front" to CapturePhotoPart.DOCUMENT_FRONT,
                     "back" to CapturePhotoPart.DOCUMENT_BACK, "selfie" to CapturePhotoPart.SELFIE)) {
                     part(name, "image/jpeg") { EkycSdk.writePhotoEvidence(handle, accountId, receipt.attemptId, photo, output) }
+                }
+                // Citizen ID from the front-image OCR: a plain form field in the body, never a header or URL.
+                EkycSdk.documentCitizenIdFromImage(handle, accountId, receipt.attemptId)?.let { citizenId ->
+                    check(owner == accountId) { "Account changed" }
+                    output.write("--$boundary\r\nContent-Disposition: form-data; name=\"citizenIdFromImage\"\r\n\r\n".toByteArray())
+                    output.write(citizenId.toByteArray(Charsets.US_ASCII))
+                    output.write("\r\n".toByteArray())
                 }
                 output.write("--$boundary--\r\n".toByteArray())
             }
