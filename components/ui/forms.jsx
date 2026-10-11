@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: TOUCH },
   box: { width: 24, height: 24, borderRadius: 4, borderWidth: 2, borderColor: colors.lineStrong, alignItems: 'center', justifyContent: 'center' },
   dateBox: { borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md, padding: space.md, gap: space.sm, backgroundColor: colors.surfaceSunken },
-  dateValue: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
+  dateValue: { fontSize: 17, fontFamily: fonts.monoBold, color: colors.ink },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   day: { minHeight: 36, paddingHorizontal: 10, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, justifyContent: 'center' },
   dayText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },

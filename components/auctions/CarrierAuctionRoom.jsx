@@ -11,6 +11,8 @@ import { getBidCeiling, getQuickBidAmounts, validateBidAmount } from '@/lib/shar
 import { formatCountdown, formatDateTime, formatMoney, formatTimeWindow, formatWeight, secondsUntil, shortId, toAmount } from '@/lib/shared/format';
 import { VEHICLE_TYPES } from '@/lib/shared/auctionForm';
 import { auctionRoute } from './AuctionCard';
+import { CountUp, Gauge, Reveal } from '@/components/motion';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { colors, radius, space, type, fonts } from '@/constants/theme';
 
 // Without the realtime socket the room polls; the server stays authoritative for every bid.
@@ -74,6 +76,7 @@ export default function CarrierAuctionRoom({ auctionId }) {
   const outcome = getMyBidOutcome({ auction, myBidIds: myBids.map((bid) => bid.id) });
   const context = { auctionType: auction.auctionType, maxPrice: auction.maxPrice, priceStep: auction.priceStep, lowestBid, remainingBids: data.remainingBids };
   const ceiling = getBidCeiling(context);
+  const ceilingAmount = toAmount(auction.maxPrice) || 0;
   const quick = getQuickBidAmounts(context);
   const roomOpen = canEnter && phase === 'OPEN';
   const blocked = !roomOpen ? null : endsIn === 0 ? 'Đã hết giờ theo đồng hồ của bạn. Đang xác nhận với máy chủ.' : data.remainingBids === 0 ? 'Bạn đã dùng hết số lượt đặt giá.' : null;
@@ -93,8 +96,10 @@ export default function CarrierAuctionRoom({ auctionId }) {
       pendingKey.current = null;
       setAmount('');
       setNotice(sealed ? 'Đã gửi giá kín.' : 'Đã đặt giá.');
+      hapticSuccess();
     } catch (failure) {
       if (!failure.isNetwork) pendingKey.current = null;
+      hapticError();
       setBidError(failure.isNetwork ? `${failure.message} Bấm đặt lại cùng số tiền để thử lại an toàn.` : failure.message);
     }
     await reload();
@@ -119,7 +124,7 @@ export default function CarrierAuctionRoom({ auctionId }) {
         {error ? <Text style={[type.caption, { color: colors.warning }]}>Chưa làm mới được: {error}</Text> : null}
         <Card>
           <View style={styles.head}>
-            <Text style={[type.caption, type.tabular]}>#{shortId(auction.id)} · {AUCTION_TYPE_META[auction.auctionType]?.label}</Text>
+            <Text style={type.code}>#{shortId(auction.id)} · {AUCTION_TYPE_META[auction.auctionType]?.label}</Text>
             <StatusBadge {...getAuctionPhaseMeta(auction)} />
           </View>
           <Text style={styles.title}>{auction.title}</Text>
@@ -128,10 +133,23 @@ export default function CarrierAuctionRoom({ auctionId }) {
         </Card>
         {/* DESIGN.md: the bid room's key facts on the navy band while the room is open. */}
         {phase === 'OPEN' ? (
-          <Band eyebrow={sealed ? 'Giá trần' : 'Giá thấp nhất hiện tại'} value={sealed ? formatMoney(auction.maxPrice) : lowestBid === null ? 'Chưa có giá' : formatMoney(lowestBid)}>
-            <Text style={[styles.bandTimer, type.tabular]} accessibilityLiveRegion="polite">Còn {formatCountdown(endsIn)}{endsIn < 300 ? ' · sắp kết thúc' : ''}</Text>
-            <Text style={styles.bandMeta}>{data.remainingBids !== null ? 'Còn ' + data.remainingBids + ' lượt đặt · ' : ''}Kết quả do máy chủ chốt</Text>
-          </Band>
+          <Reveal>
+            <Band
+              eyebrow={sealed ? 'Giá trần' : 'Giá thấp nhất hiện tại'}
+              live
+              value={sealed ? formatMoney(auction.maxPrice) : lowestBid === null ? 'Chưa có giá' : <CountUp value={lowestBid} format={formatMoney} style={styles.bandPrice} />}
+            >
+              {ceilingAmount > 0 && lowestBid !== null ? (
+                <View style={styles.gaugeBlock}>
+                  <Gauge value={1 - lowestBid / ceilingAmount} onDark label="Mức thấp hơn giá trần" />
+                  <Text style={[styles.bandMeta, type.tabular]}>Thấp hơn giá trần {Math.round((1 - lowestBid / ceilingAmount) * 100)}%</Text>
+                </View>
+              ) : null}
+              <Text style={[styles.bandTimer, type.tabular]} accessibilityLiveRegion="polite">Còn {formatCountdown(endsIn)}</Text>
+              {endsIn < 300 ? <Text style={styles.urgent}>Sắp kết thúc</Text> : null}
+              <Text style={styles.bandMeta}>{data.remainingBids !== null ? 'Còn ' + data.remainingBids + ' lượt đặt · ' : ''}Kết quả do máy chủ chốt</Text>
+            </Band>
+          </Reveal>
         ) : null}
 
         {/* Registration gate */}
@@ -285,16 +303,20 @@ function RegisterSheet({ auction, onClose, onDone, onAccess }) {
 }
 
 const styles = StyleSheet.create({
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
+  head: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
   title: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
   route: { fontSize: 15, fontFamily: fonts.semibold, color: colors.brand },
-  bandTimer: { fontSize: 20, fontFamily: fonts.bold, color: colors.surface },
+  bandPrice: { fontSize: 30, fontFamily: fonts.monoBold, color: colors.surface, fontVariant: ['tabular-nums'] },
+  bandTimer: { fontSize: 20, fontFamily: fonts.monoBold, color: colors.surface, fontVariant: ['tabular-nums'] },
+  // Under five minutes is the one moment the signal colour appears in the room (DESIGN.md: one signal per idea).
+  urgent: { fontSize: 13, fontFamily: fonts.bold, color: colors.signal, textTransform: 'uppercase', letterSpacing: 0.4 },
+  gaugeBlock: { gap: space.xs },
   bandMeta: { fontSize: 13, fontFamily: fonts.regular, color: colors.onBandSoft },
   bid: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, padding: space.md, gap: 2 },
-  amount: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
+  amount: { fontSize: 16, fontFamily: fonts.monoBold, color: colors.ink, fontVariant: ['tabular-nums'] },
   quick: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   quickChip: { minHeight: 40, paddingHorizontal: space.md, borderRadius: 20, backgroundColor: colors.brandSoft, justifyContent: 'center' },
-  quickText: { color: colors.brand, fontFamily: fonts.bold },
+  quickText: { color: colors.brand, fontFamily: fonts.monoBold, fontSize: 14 },
   label: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   vehicle: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, padding: space.md, gap: 2 },
   images: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Button, FieldError, StatusBadge } from '@/components/ui';
+import { Gauge } from '@/components/motion';
 import { api } from '@/lib/api';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { formatDateTime } from '@/lib/trips';
 import { colors, space, type, fonts } from '@/constants/theme';
 
@@ -16,6 +18,7 @@ export default function DriverMilestoneTracker({ tripId, milestones, tripStatus,
   const [errors, setErrors] = useState({});
   const ordered = [...milestones].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
   const canCheckIn = tripStatus === 'PICKED_UP' || tripStatus === 'IN_TRANSIT';
+  const reachedCount = ordered.filter((milestone) => milestone.status === 'REACHED').length;
 
   const checkIn = async (milestone) => {
     if (activeId) return;
@@ -34,8 +37,10 @@ export default function DriverMilestoneTracker({ tripId, milestones, tripStatus,
         currentLat: position.coords.latitude,
         currentLng: position.coords.longitude,
       });
+      hapticSuccess();
       await onChanged?.(`Đã check-in tại ${milestone.milestoneName}.`);
     } catch (checkInError) {
+      hapticError();
       setErrors((current) => ({ ...current, [milestone.id]: checkInError.message || 'Không check-in được. Vui lòng thử lại.' }));
     } finally {
       setActiveId(null);
@@ -45,13 +50,17 @@ export default function DriverMilestoneTracker({ tripId, milestones, tripStatus,
 
   return (
     <View style={{ gap: space.md }}>
+      <View style={{ gap: space.xs }}>
+        <Text style={type.figure}>{reachedCount}/{ordered.length} cột mốc đã check-in</Text>
+        <Gauge value={ordered.length ? reachedCount / ordered.length : 0} label="Tiến độ check-in cột mốc" />
+      </View>
       {!canCheckIn && <Text style={type.secondary}>Check-in cột mốc mở sau khi bạn đã lấy hàng.</Text>}
       {ordered.map((milestone, index) => {
         const reached = milestone.status === 'REACHED';
         return (
           <View key={milestone.id} style={styles.row}>
             <View style={[styles.index, reached && { backgroundColor: colors.success, borderColor: colors.success }]}>
-              <Text style={[styles.indexText, reached && { color: '#fff' }]}>{reached ? '✓' : index + 1}</Text>
+              <Text style={[styles.indexText, reached && { color: colors.surface }]}>{reached ? '✓' : index + 1}</Text>
             </View>
             <View style={{ flex: 1, gap: 6 }}>
               <Text style={styles.name}>{milestone.milestoneName}</Text>

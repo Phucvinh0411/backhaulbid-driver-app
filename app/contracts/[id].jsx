@@ -3,6 +3,7 @@ import { Linking, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ActionBar, Banner, Button, CheckRow, Row, Screen, Section, StateView, StatusBadge, useResource, useSingleFlight } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { hapticSuccess } from '@/lib/haptics';
 import { contractApi } from '@/lib/services';
 import { mapContractResponse } from '@/lib/shared/contractMapper';
 import { formatDateTime, formatMoney } from '@/lib/shared/format';
@@ -28,6 +29,7 @@ export default function ContractDetailScreen() {
     try {
       await contractApi.sign(String(id));
       setNotice('Đã ký hợp đồng.');
+      hapticSuccess();
       setAgreed(false);
     } catch (failure) {
       setSignError(failure.message);

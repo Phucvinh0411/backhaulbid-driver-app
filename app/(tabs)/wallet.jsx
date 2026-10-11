@@ -3,6 +3,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ActionBar, Banner, Band, Button, MoneyField, Row, Screen, Section, StateView, StatusBadge, Tabs, TextField, useResource, useSingleFlight } from '@/components/ui';
 import Sheet from '@/components/Sheet';
 import PaymentCheckout, { openWebCheckout } from '@/components/PaymentCheckout';
+import { CountUp } from '@/components/motion';
 import { useAuth } from '@/lib/auth';
 import { toPage, walletApi } from '@/lib/services';
 import { TOPUP_STATUS, TRANSACTION_STATUS, TRANSACTION_TYPE, WITHDRAWAL_STATUS, metaOf, signedAmount } from '@/lib/ownerMeta';
@@ -166,7 +167,7 @@ function WalletScreen() {
         {error ? <Text style={[type.caption, { color: colors.warning }]}>Chưa làm mới được: {error}</Text> : null}
         <Band
           eyebrow="Số dư khả dụng"
-          value={formatMoney(wallet.availableBalance ?? 0)}
+          value={<CountUp value={Number(wallet.availableBalance ?? 0)} format={formatMoney} style={styles.balance} />}
           caption={`Đang tạm giữ ${formatMoney(wallet.frozenBalance ?? 0)} · tổng ${formatMoney(wallet.balance ?? 0)}. Tiền tạm giữ gồm cọc đấu giá và yêu cầu rút đang chờ duyệt.`}
         />
 
@@ -212,7 +213,8 @@ function WalletScreen() {
                   <Text style={[type.caption, type.tabular]}>{formatDateTime(item.createdAt)}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                  <Text style={[styles.amount, type.tabular, { color: amount < 0 ? colors.danger : colors.success }]}>{amount < 0 ? '−' : '+'}{formatMoney(Math.abs(amount))}</Text>
+                  {/* DESIGN.md: money in is success, money out is plain ink; red is only for penalties and errors. */}
+                  <Text style={[styles.amount, type.tabular, { color: amount < 0 ? colors.ink : colors.success }]}>{amount < 0 ? '−' : '+'}{formatMoney(Math.abs(amount))}</Text>
                   <StatusBadge {...metaOf(TRANSACTION_STATUS, item.status)} />
                 </View>
               </Pressable>
@@ -267,6 +269,7 @@ const styles = StyleSheet.create({
   balance: { fontSize: 30, fontFamily: fonts.bold, color: colors.ink },
   pair: { flexDirection: 'row', gap: space.lg },
   item: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderBottomWidth: 1, borderBottomColor: colors.line, paddingVertical: space.sm, borderRadius: radius.sm },
-  amount: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  amount: { fontSize: 15, fontFamily: fonts.monoBold, color: colors.ink },
+  balance: { fontSize: 30, fontFamily: fonts.monoBold, color: colors.surface, fontVariant: ['tabular-nums'] },
   label: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
 });

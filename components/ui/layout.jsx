@@ -3,6 +3,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, space, TOUCH, type, fonts } from '@/constants/theme';
+import { LiveDot } from '@/components/motion';
 
 /** Scrollable page with pull-to-refresh and room for a sticky action bar. */
 export function Screen({ children, refreshing = false, onRefresh, bottomInset = 0, contentStyle }) {
@@ -37,13 +38,20 @@ export function Banner({ tone = 'info', title, children }) {
 /**
  * DESIGN.md navy band: the one inverted panel per screen for its key fact (current trip,
  * wallet balance, bid room). Put Button variant="band" inside for the main action.
+ * `value` may be text or a node (for example a CountUp); `live` adds a pulsing LIVE marker.
  */
-export function Band({ eyebrow, title, value, caption, children, style }) {
+export function Band({ eyebrow, title, value, caption, live = false, children, style }) {
+  const hasValue = value !== undefined && value !== null && value !== '';
   return (
     <View style={[styles.band, style]}>
-      {eyebrow ? <Text style={styles.bandEyebrow}>{eyebrow}</Text> : null}
+      {eyebrow || live ? (
+        <View style={styles.bandTop}>
+          {eyebrow ? <Text style={styles.bandEyebrow}>{eyebrow}</Text> : <View />}
+          {live ? <LiveDot onDark /> : null}
+        </View>
+      ) : null}
       {title ? <Text accessibilityRole="header" style={styles.bandTitle}>{title}</Text> : null}
-      {value !== undefined && value !== null ? <Text style={[styles.bandValue, type.tabular]}>{value}</Text> : null}
+      {hasValue ? (typeof value === 'string' || typeof value === 'number' ? <Text style={styles.bandValue}>{value}</Text> : value) : null}
       {caption ? <Text style={styles.bandCaption}>{caption}</Text> : null}
       {children}
     </View>
@@ -54,7 +62,7 @@ export function Card({ children, onPress, accessibilityLabel, style }) {
   if (!onPress) return <View style={[styles.card, style]}>{children}</View>;
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surfaceSunken }, style]}>
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed, style]}>
       {children}
     </Pressable>
   );
@@ -69,22 +77,38 @@ export function Row({ label, value, strong, selectable }) {
   );
 }
 
-/** Horizontal segmented tabs; counts are optional. */
+/**
+ * Filter chips; counts are optional. Chips wrap onto new lines instead of scrolling sideways,
+ * so no option is ever hidden past the screen edge (N8). Long sets start collapsed to the first
+ * few options plus the selected one, with a chip that reveals the rest.
+ */
+const TABS_COLLAPSED = 4;
 export function Tabs({ options, value, onChange, label }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = options.length > TABS_COLLAPSED + 2;
+  const shown = !long || expanded ? options : options.filter((option, index) => index < TABS_COLLAPSED || option.value === value);
+  const hidden = options.length - shown.length;
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs} accessibilityRole="tablist" accessibilityLabel={label}>
-      {options.map((option) => {
+    <View style={styles.tabs} accessibilityRole="tablist" accessibilityLabel={label}>
+      {shown.map((option) => {
         const selected = option.value === value;
         return (
           <Pressable key={String(option.value)} accessibilityRole="tab" accessibilityState={{ selected }} onPress={() => onChange(option.value)}
             style={[styles.tab, selected && styles.tabSelected]}>
-            <Text style={[styles.tabText, selected && { color: colors.surface }]}>
-              {option.label}{option.count !== undefined ? ` · ${option.count}` : ''}
-            </Text>
+            <Text style={[styles.tabText, selected && { color: colors.surface }]}>{option.label}</Text>
+            {option.count !== undefined ? (
+              <Text style={[styles.tabCount, selected && { color: colors.surface }]}>{option.count}</Text>
+            ) : null}
           </Pressable>
         );
       })}
-    </ScrollView>
+      {long ? (
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded }} accessibilityLabel={expanded ? `Thu gọn ${label || "bộ lọc"}` : `Hiện thêm ${hidden} lựa chọn`}
+          onPress={() => setExpanded((current) => !current)} style={[styles.tab, styles.tabMore]}>
+          <Text style={[styles.tabText, { color: colors.brand }]}>{expanded ? "Thu gọn" : `+${hidden} khác`}</Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -92,8 +116,8 @@ export function MenuItem({ icon, label, hint, onPress, badge, danger }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint={hint} onPress={onPress}
       style={({ pressed }) => [styles.menu, pressed && { backgroundColor: colors.surfaceSunken }]}>
-      {icon}
-      <View style={{ flex: 1 }}>
+      {icon ? <View style={styles.menuIcon}>{icon}</View> : null}
+      <View style={{ flex: 1, gap: 2 }}>
         <Text style={[styles.menuLabel, danger && { color: colors.danger }]}>{label}</Text>
         {hint ? <Text style={type.caption}>{hint}</Text> : null}
       </View>
@@ -160,18 +184,23 @@ const styles = StyleSheet.create({
   bar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: space.lg, paddingTop: space.md, gap: space.sm },
   banner: { borderRadius: 12, padding: space.md, gap: 4 },
   bannerTitle: { fontSize: 15, fontFamily: fonts.bold },
-  band: { backgroundColor: colors.band, borderRadius: radius.lg, padding: space.lg, gap: space.sm },
-  bandEyebrow: { fontSize: 12, fontFamily: fonts.semibold, color: colors.onBandSoft, textTransform: 'uppercase', letterSpacing: 0.5 },
-  bandTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.surface },
-  bandValue: { fontSize: 28, fontFamily: fonts.bold, color: colors.surface },
+  band: { backgroundColor: colors.band, borderRadius: radius.lg, padding: space.lg, gap: space.sm, borderWidth: 1, borderColor: colors.bandPressed },
+  bandTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
+  bandEyebrow: { flexShrink: 1, fontSize: 12, fontFamily: fonts.semibold, color: colors.onBandSoft, textTransform: 'uppercase', letterSpacing: 0.5 },
+  bandTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.surface, lineHeight: 24 },
+  bandValue: { fontSize: 30, fontFamily: fonts.monoBold, color: colors.surface, fontVariant: ['tabular-nums'] },
   bandCaption: { fontSize: 14, fontFamily: fonts.regular, color: colors.onBandSoft, lineHeight: 20 },
   card: { backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1, borderRadius: radius.lg, padding: space.lg, gap: space.sm },
+  cardPressed: { backgroundColor: colors.surfaceSunken, transform: [{ scale: 0.99 }] },
   row: { gap: 2 },
   rowValue: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
-  tabs: { gap: space.sm, paddingVertical: 2 },
-  tab: { minHeight: 40, paddingHorizontal: space.md, borderRadius: radius.pill, backgroundColor: colors.surfaceSunken, justifyContent: 'center' },
+  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  tab: { minHeight: 40, maxWidth: '100%', paddingHorizontal: space.md, paddingVertical: 6, borderRadius: 20, backgroundColor: colors.surfaceSunken, flexDirection: 'row', alignItems: 'center', gap: 6 },
   tabSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
-  tabText: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
+  tabMore: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
+  tabText: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink, flexShrink: 1 },
+  tabCount: { fontSize: 12, fontFamily: fonts.mono, color: colors.inkMuted, fontVariant: ['tabular-nums'] },
+  menuIcon: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.brandSoft, alignItems: 'center', justifyContent: 'center' },
   menu: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: TOUCH + 8, paddingHorizontal: space.lg, paddingVertical: space.sm, backgroundColor: colors.surface },
   menuLabel: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   chevron: { fontSize: 24, color: colors.inkSubtle },

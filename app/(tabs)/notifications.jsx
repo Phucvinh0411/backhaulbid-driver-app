@@ -55,7 +55,7 @@ function Notifications({ role }) {
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={styles.title}>{item.title}</Text>
                 <Text style={type.secondary}>{item.message}</Text>
-                <Text style={[type.caption, type.tabular]}>{formatDateTime(item.createdAt)}</Text>
+                <Text style={type.code}>{formatDateTime(item.createdAt)}</Text>
                 {destination ? <Text style={styles.link}>{destination.label} ›</Text> : null}
               </View>
             </View>
@@ -68,7 +68,7 @@ function Notifications({ role }) {
 
 const styles = StyleSheet.create({
   item: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, padding: space.lg },
-  unread: { borderColor: colors.brandSoft, backgroundColor: colors.canvas },
+  unread: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.brand, marginTop: 6 },
   title: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
   link: { color: colors.brand, fontFamily: fonts.bold },

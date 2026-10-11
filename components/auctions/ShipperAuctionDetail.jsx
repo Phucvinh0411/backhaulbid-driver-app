@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { ActionBar, Banner, Button, Card, ChoiceChips, Row, Screen, Section, StateView, StatusBadge, TextField, useResource, useSingleFlight } from '@/components/ui';
 import Sheet from '@/components/Sheet';
 import ProofImage from '@/components/ProofImage';
+import { LiveDot } from '@/components/motion';
 import { biddingApi, toPage } from '@/lib/services';
 import { AUCTION_TYPE_META, getAuctionPhase, getAuctionPhaseMeta, getAwardStatusMeta } from '@/lib/shared/statusMeta';
 import { formatCountdown, formatDateTime, formatMoney, formatTimeWindow, formatWeight, secondsUntil, shortId, toAmount } from '@/lib/shared/format';
@@ -103,15 +104,18 @@ export default function ShipperAuctionDetail({ auctionId }) {
 
         <Card>
           <View style={styles.head}>
-            <Text style={[type.caption, type.tabular]}>#{shortId(auction.id)} · {AUCTION_TYPE_META[auction.auctionType]?.label}</Text>
+            <Text style={type.code}>#{shortId(auction.id)} · {AUCTION_TYPE_META[auction.auctionType]?.label}</Text>
             <StatusBadge {...getAuctionPhaseMeta(auction)} />
           </View>
           <Text style={styles.title}>{auction.title}</Text>
           <Text style={styles.route}>{auctionRoute(auction)}</Text>
           {live ? (
-            <Text style={[styles.countdown, type.tabular]} accessibilityLiveRegion="polite">
-              {deadline.label} sau {formatCountdown(secondsUntil(deadline.at, now))}
-            </Text>
+            <View style={styles.countdownRow}>
+              <LiveDot />
+              <Text style={[styles.countdown, type.tabular]} accessibilityLiveRegion="polite">
+                {deadline.label} sau {formatCountdown(secondsUntil(deadline.at, now))}
+              </Text>
+            </View>
           ) : null}
           {auction.status === 'CANCELLED' ? <Banner tone="danger">Phiên đã hủy{auction.cancellationReason ? `: ${auction.cancellationReason}` : '.'}</Banner> : null}
         </Card>
@@ -206,12 +210,13 @@ export default function ShipperAuctionDetail({ auctionId }) {
 }
 
 const styles = StyleSheet.create({
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
+  head: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
   title: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
   route: { fontSize: 15, fontFamily: fonts.semibold, color: colors.brand },
-  countdown: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  countdownRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  countdown: { fontSize: 15, fontFamily: fonts.monoBold, color: colors.ink, fontVariant: ['tabular-nums'] },
   bid: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, padding: space.md },
-  amount: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
+  amount: { fontSize: 16, fontFamily: fonts.monoBold, color: colors.ink, fontVariant: ['tabular-nums'] },
   link: { minHeight: 36, minWidth: 64, paddingHorizontal: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
   linkText: { color: colors.brand, fontFamily: fonts.bold },
   images: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

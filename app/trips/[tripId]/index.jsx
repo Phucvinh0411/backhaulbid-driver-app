@@ -5,7 +5,8 @@ import { useAuth } from '@/lib/auth';
 import { isDriverSession, scopeKey } from '@/lib/sessionModel';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, FieldError, Section, StateView } from '@/components/ui';
+import { Band, Button, FieldError, Section, StateView } from '@/components/ui';
+import { hapticSuccess, hapticWarning } from '@/lib/haptics';
 import Sheet from '@/components/Sheet';
 import ProofImage from '@/components/ProofImage';
 import JourneyOverview from '@/components/tracking/JourneyOverview';
@@ -131,6 +132,7 @@ function TripDetail() {
         await api.post(`/api/v1/trips/${tripId}/journey-events`, { eventType: step.eventType, ...(step.status ? { status: step.status } : {}) });
         setConfirmStep(null);
         setNotice(`Đã ghi nhận: ${step.label}.`);
+        hapticSuccess();
       } catch (stepError) {
         setActionError(stepError.message);
       }
@@ -148,6 +150,7 @@ function TripDetail() {
         setIncidentOpen(false);
         setIncidentNote('');
         setNotice('Đã gửi báo cáo sự cố.');
+        hapticWarning();
         await load();
       } catch (incidentFailure) {
         setIncidentError(incidentFailure.message);
@@ -192,6 +195,7 @@ function TripDetail() {
         setProofNote('');
         setSavedProofUrl('');
         setNotice('Đã báo giao hàng. Chờ chủ hàng xác nhận.');
+        hapticSuccess();
         await load();
       } catch (proofFailure) {
         setProofError(url ? `Ảnh đã được lưu nhưng chưa cập nhật trạng thái chuyến. ${proofFailure.message} Bấm “Thử lại”.` : proofFailure.message);
@@ -223,7 +227,11 @@ function TripDetail() {
         {actionError ? <View style={styles.errorBox} accessibilityRole="alert"><Text style={styles.errorText}>{actionError}</Text></View> : null}
         {error ? <Text style={[type.caption, { color: colors.warning }]}>Chưa làm mới được: {error}</Text> : null}
 
-        <JourneyOverview trip={trip} events={events} milestones={milestones} nextStep={steps.primary?.hint}>
+        {/* The driver's next step is the one fact this screen exists for: the navy band at the top, as DESIGN.md prescribes. It is the only place the hint appears. */}
+        {/* The instruction is the title; the status already heads the journey card and the action is the bottom button, so neither is repeated here. */}
+        {steps.primary?.hint && !closed ? <Band eyebrow="Việc tiếp theo" title={steps.primary.hint} /> : null}
+
+        <JourneyOverview trip={trip} events={events} milestones={milestones}>
           <DriverLocationControl trip={trip} />
         </JourneyOverview>
 
@@ -231,11 +239,6 @@ function TripDetail() {
           <HandoverSection tripId={trip.id} handover={handover} active={trip.status === 'WAITING_PICKUP'} onSaved={load} />
         ) : null}
 
-        {steps.primary?.hint && !closed ? (
-          <Section title="Bước tiếp theo">
-            <Text style={type.body}>{steps.primary.hint}</Text>
-          </Section>
-        ) : null}
         {trip.status === 'DELIVERED' ? (
           <Section title="Đã giao">
             <Text style={type.body}>Đang chờ chủ hàng xác nhận nhận hàng. Tài xế không tự hoàn thành chuyến.</Text>
@@ -255,7 +258,7 @@ function TripDetail() {
               <View key={proof.id} style={styles.proofRow}>
                 <ProofImage url={proof.imageUrl} style={styles.proofImage} label={proof.note || 'Ảnh bằng chứng giao hàng'} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[type.secondary, type.tabular]}>{formatDateTime(proof.uploadedAt)}</Text>
+                  <Text style={type.code}>{formatDateTime(proof.uploadedAt)}</Text>
                   {proof.note ? <Text style={type.body}>{proof.note}</Text> : null}
                 </View>
               </View>
@@ -375,5 +378,6 @@ const styles = StyleSheet.create({
   preview: { width: '100%', height: 180, borderRadius: radius.md, backgroundColor: colors.surfaceSunken },
   bar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: space.lg, paddingTop: space.md, gap: space.sm },
   barRow: { flexDirection: 'row', gap: space.sm },
-  textarea: { minHeight: TOUCH * 2, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md, padding: space.md, fontSize: 16, color: colors.ink, textAlignVertical: 'top' },
+  // DESIGN.md soft-filled input, same as TextField.
+  textarea: { minHeight: TOUCH * 2, backgroundColor: colors.surfaceSunken, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md, padding: space.md, fontSize: 16, fontFamily: fonts.regular, color: colors.ink, textAlignVertical: 'top' },
 });

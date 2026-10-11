@@ -82,8 +82,8 @@ export default function MyRegistrationsScreen() {
           const outcome = outcomes[row.auction?.id];
           return (
             <Card key={row.registration.id}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
-                <Text style={[type.caption, type.tabular]}>#{shortId(row.auction?.id)}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm }}>
+                <Text style={type.code}>#{shortId(row.auction?.id)}</Text>
                 {status ? <StatusBadge {...getAccessStatusMeta(status)} /> : null}
               </View>
               <Text style={{ fontSize: 16, fontFamily: fonts.bold, color: colors.ink }}>{row.auction?.title}</Text>

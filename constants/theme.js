@@ -1,6 +1,8 @@
+import { Appearance } from 'react-native';
+
 // Design tokens shared with the web portal; rules and measured contrast live in DESIGN.md.
 // Navy is the only action colour; greys are cool-tinted to match it.
-export const colors = {
+const light = {
   ink: '#0F1E2E',
   inkMuted: '#4A5B6C',
   inkSubtle: '#5E6A77',
@@ -24,7 +26,49 @@ export const colors = {
   dangerSoft: '#FBE7E7',
   info: '#1F5FBF',
   infoSoft: '#E6EEFA',
+  // Live signal: one bright accent for "happening now" (LIVE dot, urgent countdown). Never a button colour.
+  signal: '#2DD4BF',
+  signalText: '#0F766E',
 };
+
+// Dark palette. The band inverts to a light panel, so every "text on brand/band" that uses
+// colors.surface stays readable without touching the screens. Pairs are chosen for >= 4.5:1 body text.
+const dark = {
+  ink: '#E8EEF4',
+  inkMuted: '#A9B8C6',
+  inkSubtle: '#8D9CAB',
+  canvas: '#0A141D',
+  surface: '#111E2A',
+  surfaceSunken: '#1A2B3A',
+  line: '#24384A',
+  lineStrong: '#3A5166',
+  brand: '#7DB3D8',
+  brandPressed: '#9CC6E3',
+  brandSoft: '#17324A',
+  band: '#DCE8F1',
+  bandPressed: '#C3D3DF',
+  onBandSoft: '#3A4C5C',
+  focus: '#7DB3D8',
+  success: '#5FD38D',
+  successSoft: '#12301F',
+  warning: '#F2B75C',
+  warningSoft: '#3A2A0C',
+  danger: '#FF8A8A',
+  dangerSoft: '#3D1517',
+  info: '#8AB4F8',
+  infoSoft: '#152A4A',
+  signal: '#0F766E',
+  signalText: '#2DD4BF',
+};
+
+/**
+ * The palette is resolved once, at launch, from the system setting. Screens build their StyleSheets
+ * at import time, so a theme change takes effect the next time the app starts.
+ */
+export const scheme = Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+export const colors = scheme === 'dark' ? dark : light;
+/** For surfaces that never go dark, such as the map document drawn over light map tiles. */
+export const lightColors = light;
 
 // Soft fill + status-coloured text, each pair >= 4.6:1. `border` equals the fill (no outline).
 export const tones = {
@@ -50,6 +94,9 @@ export const fonts = {
   medium: 'BeVietnamPro_500Medium',
   semibold: 'BeVietnamPro_600SemiBold',
   bold: 'BeVietnamPro_700Bold',
+  // JetBrains Mono: money, countdowns, trip and plate codes only. Vietnamese copy stays in Be Vietnam Pro.
+  mono: 'JetBrainsMono_500Medium',
+  monoBold: 'JetBrainsMono_700Bold',
 };
 
 export const type = {
@@ -59,6 +106,19 @@ export const type = {
   secondary: { fontSize: 14, fontFamily: fonts.regular, color: colors.inkMuted, lineHeight: 20 },
   caption: { fontSize: 13, fontFamily: fonts.regular, color: colors.inkMuted },
   tabular: { fontVariant: ['tabular-nums'] },
+  // Numbers that must line up and stay still while they change (N1): mono is fixed-width by design.
+  figure: { fontFamily: fonts.mono, color: colors.ink, fontVariant: ['tabular-nums'] },
+  // Reference codes and timestamps: mono so characters are unambiguous, muted so they stay secondary.
+  code: { fontFamily: fonts.mono, fontSize: 12, color: colors.inkMuted, fontVariant: ['tabular-nums'] },
+};
+
+/** Motion budget. Only transform and opacity are animated; durations stay short so the UI never feels slow. */
+export const motion = {
+  fast: 160,
+  base: 260,
+  slow: 480,
+  stagger: 55,
+  pulse: 1300,
 };
 
 export const elevation = {

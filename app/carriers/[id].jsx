@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Row, Screen, Section, StateView, StatusBadge, useResource } from '@/components/ui';
+import { Gauge } from '@/components/motion';
 import { carrierProfileApi } from '@/lib/services';
 import { FLEET_STATUS, metaOf } from '@/lib/ownerMeta';
 import { VEHICLE_TYPES } from '@/lib/shared/auctionForm';
@@ -42,6 +43,7 @@ export default function CarrierProfileScreen() {
           <Row label="Email" value={company.contactEmail} />
         </Section>
         <Section title="Điểm uy tín" right={data.reputation?.score != null ? <Text style={[styles.score, type.tabular]}>{data.reputation.score}/100</Text> : null}>
+          {data.reputation?.score != null ? <Gauge value={Number(data.reputation.score) / 100} label="Điểm uy tín trên thang 100" /> : null}
           <Text style={type.caption}>Dùng để xét điều kiện tham gia phiên; giảm khi vi phạm chính sách giao trễ.</Text>
           {data.reputation == null ? <Text style={type.secondary}>Chưa có dữ liệu.</Text> : history.length === 0 ? <Text style={type.secondary}>Chưa có lần điều chỉnh điểm nào.</Text> : null}
           {history.map((entry) => (
@@ -55,8 +57,8 @@ export default function CarrierProfileScreen() {
           {data.vehicles.length === 0 ? <Text style={type.secondary}>Chưa có phương tiện công khai.</Text> : null}
           {data.vehicles.map((vehicle) => (
             <View key={vehicle.id} style={styles.entry}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
-                <Text style={styles.strong}>{vehicle.licensePlate}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm }}>
+                <Text style={[styles.strong, { fontFamily: fonts.monoBold }]}>{vehicle.licensePlate}</Text>
                 <StatusBadge {...metaOf(FLEET_STATUS, vehicle.status)} />
               </View>
               <Text style={type.caption}>{VEHICLE_TYPES.find((item) => item.value === vehicle.vehicleType)?.label || vehicle.vehicleType}{vehicle.bodyType ? ` · ${vehicle.bodyType}` : ''} · {vehicle.payloadCapacity} tấn</Text>
@@ -78,7 +80,7 @@ export default function CarrierProfileScreen() {
 }
 
 const styles = {
-  score: { fontSize: 18, fontFamily: fonts.bold, color: colors.brand },
+  score: { fontSize: 18, fontFamily: fonts.monoBold, color: colors.ink },
   entry: { borderTopWidth: 1, borderTopColor: colors.line, paddingTop: space.sm, gap: 2, borderRadius: radius.sm },
   strong: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
 };

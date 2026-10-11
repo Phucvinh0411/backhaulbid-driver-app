@@ -53,8 +53,8 @@ function Fleet() {
         {state === 'ready' && list.length === 0 && <StateView title={section === 'vehicles' ? 'Chưa có phương tiện phù hợp' : 'Chưa có tài xế phù hợp'} message="Hồ sơ mới được quản trị viên duyệt trước khi dùng để đấu giá hoặc phân công." />}
         {section === 'vehicles' && list.map((vehicle) => (
           <Card key={vehicle.id} onPress={() => router.push(`/fleet/vehicle/${vehicle.id}`)} accessibilityLabel={`Xe ${vehicle.licensePlate}`}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
-              <Text style={{ fontSize: 17, fontFamily: fonts.bold, color: colors.ink }}>{vehicle.licensePlate}</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm }}>
+              <Text style={{ fontSize: 17, fontFamily: fonts.monoBold, color: colors.ink }}>{vehicle.licensePlate}</Text>
               <StatusBadge {...metaOf(FLEET_STATUS, vehicle.status)} />
             </View>
             <Text style={type.secondary}>{VEHICLE_TYPES.find((item) => item.value === vehicle.vehicleType)?.label || vehicle.vehicleType}{vehicle.bodyType ? ` · ${vehicle.bodyType}` : ''} · {vehicle.payloadCapacity} tấn</Text>
@@ -63,11 +63,11 @@ function Fleet() {
         ))}
         {section === 'drivers' && list.map((driver) => (
           <Card key={driver.id} onPress={() => router.push(`/fleet/driver/${driver.id}`)} accessibilityLabel={`Tài xế ${driver.fullName}`}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm }}>
               <Text style={{ fontSize: 16, fontFamily: fonts.bold, color: colors.ink, flex: 1 }}>{driver.fullName}</Text>
               <StatusBadge {...metaOf(FLEET_STATUS, driver.status)} />
             </View>
-            <Text style={[type.secondary, type.tabular]}>{driver.phone} · GPLX {driver.licenseNumber}</Text>
+            <Text style={type.code}>{driver.phone} · GPLX {driver.licenseNumber}</Text>
             {driver.status === 'REJECTED' && driver.rejectionReason ? <Text style={[type.caption, { color: colors.danger }]}>Lý do: {driver.rejectionReason}</Text> : null}
           </Card>
         ))}

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   starText: { fontSize: 16, fontFamily: fonts.semibold, color: colors.ink },
   starTextActive: { color: colors.surface },
   input: {
-    minHeight: TOUCH * 2, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md,
-    padding: space.md, fontSize: 15, color: colors.ink, backgroundColor: colors.surface, textAlignVertical: 'top',
+    minHeight: TOUCH * 2, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md,
+    padding: space.md, fontSize: 15, fontFamily: fonts.regular, color: colors.ink, backgroundColor: colors.surfaceSunken, textAlignVertical: 'top',
   },
 });
