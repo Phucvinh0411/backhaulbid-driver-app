@@ -1,0 +1,110 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "vn.backhaulbid.identity",
+    "module": "nfc-core",
+    "version": "0.2.1-dev",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nfc-core-0.2.1-dev.aar",
+          "url": "nfc-core-0.2.1-dev.aar",
+          "size": 274926,
+          "sha512": "bf0145b4944b99ed980064ed6e5cbf250b33013e4cfe761408eb6cd5a55412f687488e63bae3687400873c57576254f44a89f986b2b8a81f4e1327ebe44d1e84",
+          "sha256": "35e783d36a059c4525f878c9358d7d466927d12d4aed0630a06743ca59d4e582",
+          "sha1": "2e71be36963bdf5a96848b0210d0f23b6857a206",
+          "md5": "cd453269f22dc97407e5e0cac7215d2b"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.bouncycastle",
+          "module": "bcprov-jdk18on",
+          "version": {
+            "requires": "1.79"
+          }
+        },
+        {
+          "group": "org.bouncycastle",
+          "module": "bcpkix-jdk18on",
+          "version": {
+            "requires": "1.79"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nfc-core-0.2.1-dev.aar",
+          "url": "nfc-core-0.2.1-dev.aar",
+          "size": 274926,
+          "sha512": "bf0145b4944b99ed980064ed6e5cbf250b33013e4cfe761408eb6cd5a55412f687488e63bae3687400873c57576254f44a89f986b2b8a81f4e1327ebe44d1e84",
+          "sha256": "35e783d36a059c4525f878c9358d7d466927d12d4aed0630a06743ca59d4e582",
+          "sha1": "2e71be36963bdf5a96848b0210d0f23b6857a206",
+          "md5": "cd453269f22dc97407e5e0cac7215d2b"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "nfc-core-0.2.1-dev-sources.jar",
+          "url": "nfc-core-0.2.1-dev-sources.jar",
+          "size": 58764,
+          "sha512": "5e26807f29f2721e8802bbf4b545750214fc19086fce577e4dbc82cc26fc75b26a2cde39d1b01dea335768ee9ad2a322715ba33ba109118d805b1c9c4aadc9ce",
+          "sha256": "cfc74a9e6d2db03a8305cbb7f35a0b99c02531980c93ed211e0037c6e0ae1920",
+          "sha1": "8f74cb0d88862ac52834cb7774a5d7658fc0b8cd",
+          "md5": "2d82ff1492ab6c77e363236f7bcc69b0"
+        }
+      ]
+    }
+  ]
+}

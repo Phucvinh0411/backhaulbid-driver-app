@@ -1,0 +1,255 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "vn.backhaulbid.identity",
+    "module": "ekyc-android",
+    "version": "0.2.4-dev",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "vn.backhaulbid.identity",
+          "module": "nfc-core",
+          "version": {
+            "requires": "0.2.1-dev"
+          }
+        },
+        {
+          "group": "androidx.activity",
+          "module": "activity-ktx",
+          "version": {
+            "requires": "1.10.1"
+          }
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "8.9.2"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ekyc-android-0.2.4-dev.aar",
+          "url": "ekyc-android-0.2.4-dev.aar",
+          "size": 1133221,
+          "sha512": "88518ce17183ac5ed35ceabb495627d669566a022d6b6ba896de9834c2ac20d8c2d50bed8b8f17b754b0a34a9990c04c8d33ef348e29ffa1c388a34c6d7338dd",
+          "sha256": "6a6b8fa5e64dd5dc474384fa0d522e4f504a04bcbf58740c5b10f13a3bf59d5b",
+          "sha1": "c35e23b97e42c1d961c0ed0d50ce54822c53e894",
+          "md5": "95565e58995a75533a8e24c7903cfc34"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.activity",
+          "module": "activity-compose",
+          "version": {
+            "requires": "1.10.1"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.15.0"
+          }
+        },
+        {
+          "group": "androidx.lifecycle",
+          "module": "lifecycle-runtime-ktx",
+          "version": {
+            "requires": "2.8.7"
+          }
+        },
+        {
+          "group": "androidx.lifecycle",
+          "module": "lifecycle-viewmodel-ktx",
+          "version": {
+            "requires": "2.8.7"
+          }
+        },
+        {
+          "group": "androidx.camera",
+          "module": "camera-core",
+          "version": {
+            "requires": "1.6.2"
+          }
+        },
+        {
+          "group": "androidx.camera",
+          "module": "camera-camera2",
+          "version": {
+            "requires": "1.6.2"
+          }
+        },
+        {
+          "group": "androidx.camera",
+          "module": "camera-lifecycle",
+          "version": {
+            "requires": "1.6.2"
+          }
+        },
+        {
+          "group": "androidx.camera",
+          "module": "camera-view",
+          "version": {
+            "requires": "1.6.2"
+          }
+        },
+        {
+          "group": "com.google.mlkit",
+          "module": "face-detection",
+          "version": {
+            "requires": "16.1.7"
+          }
+        },
+        {
+          "group": "com.google.mlkit",
+          "module": "text-recognition",
+          "version": {
+            "requires": "16.0.1"
+          }
+        },
+        {
+          "group": "com.microsoft.onnxruntime",
+          "module": "onnxruntime-android",
+          "version": {
+            "requires": "1.25.1"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.10.1"
+          }
+        },
+        {
+          "group": "androidx.compose",
+          "module": "compose-bom",
+          "version": {
+            "requires": "2025.05.01"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          }
+        },
+        {
+          "group": "androidx.compose.ui",
+          "module": "ui"
+        },
+        {
+          "group": "androidx.compose.ui",
+          "module": "ui-tooling-preview"
+        },
+        {
+          "group": "androidx.compose.material3",
+          "module": "material3"
+        },
+        {
+          "group": "androidx.compose.material",
+          "module": "material-icons-extended"
+        },
+        {
+          "group": "androidx.navigation",
+          "module": "navigation-compose",
+          "version": {
+            "requires": "2.8.9"
+          }
+        },
+        {
+          "group": "vn.backhaulbid.identity",
+          "module": "nfc-core",
+          "version": {
+            "requires": "0.2.1-dev"
+          }
+        },
+        {
+          "group": "androidx.activity",
+          "module": "activity-ktx",
+          "version": {
+            "requires": "1.10.1"
+          }
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "8.9.2"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ekyc-android-0.2.4-dev.aar",
+          "url": "ekyc-android-0.2.4-dev.aar",
+          "size": 1133221,
+          "sha512": "88518ce17183ac5ed35ceabb495627d669566a022d6b6ba896de9834c2ac20d8c2d50bed8b8f17b754b0a34a9990c04c8d33ef348e29ffa1c388a34c6d7338dd",
+          "sha256": "6a6b8fa5e64dd5dc474384fa0d522e4f504a04bcbf58740c5b10f13a3bf59d5b",
+          "sha1": "c35e23b97e42c1d961c0ed0d50ce54822c53e894",
+          "md5": "95565e58995a75533a8e24c7903cfc34"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ekyc-android-0.2.4-dev-sources.jar",
+          "url": "ekyc-android-0.2.4-dev-sources.jar",
+          "size": 179338,
+          "sha512": "d5e9e73507160561c043c04a2366fe69990bbf1a923a622094ae4869a728c3a9e15023173659f5318494ff1a7d02a0a0c10ea468b76bbf9a940a32b4028ff267",
+          "sha256": "831813ab375e0d10270c10222ee35062804bb48ad2622b934f34b14861d2297e",
+          "sha1": "a48f5f92d9ba495c073a5f037b7ea557d3761140",
+          "md5": "a84b6a67adef1998629319c1c9f709f7"
+        }
+      ]
+    }
+  ]
+}
