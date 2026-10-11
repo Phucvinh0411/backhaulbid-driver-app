@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Button, FieldError } from '@/components/ui';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Banner, Button, TextField } from '@/components/ui';
+import { Reveal } from '@/components/motion';
 import { useAuth } from '@/lib/auth';
-import { colors, radius, space, TOUCH, type, fonts } from '@/constants/theme';
+import { colors, radius, space, type, fonts } from '@/constants/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -37,65 +39,73 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.brandRow}>
-            <View style={styles.brandMark}>
-              <Text style={styles.brandMarkText}>B</Text>
+          {/* The brand block is the one navy panel here: it names the product before the form asks for anything. */}
+          <Reveal>
+            <View style={styles.hero}>
+              <View style={styles.mark}>
+                <FontAwesome6 name="truck" size={18} color={colors.brand} />
+              </View>
+              <Text style={styles.heroName}>BackHaulBid</Text>
+              <Text style={styles.heroTitle}>Đấu giá xe tải chiều về</Text>
+              <Text style={styles.heroBody}>Chủ hàng đăng lô, chủ xe đặt giá, tài xế chạy chuyến.</Text>
             </View>
-            <Text style={styles.brandName}>BackHaulBid</Text>
-          </View>
-          {/* Drivers have no account: they enter the one-time code their carrier sent. */}
-          <View style={styles.driverCard}>
-            <Text style={type.heading}>Tài xế</Text>
-            <Text style={type.secondary}>Nhập hoặc quét mã nhận chuyến do chủ xe gửi. Không cần số điện thoại hay mật khẩu.</Text>
-            <Button label="Nhập mã nhận chuyến" onPress={() => router.push('/driver-code')} />
-          </View>
-          {signOutNotice ? <View style={styles.alert} accessibilityRole="alert"><Text style={styles.alertText}>{signOutNotice}</Text></View> : null}
-          <Text style={type.title}>Chủ hàng, Chủ xe đăng nhập</Text>
+          </Reveal>
 
-          {formError ? (
-            <View style={styles.alert} accessibilityRole="alert">
-              <Text style={styles.alertText}>{formError}</Text>
+          <Reveal index={1}>
+            <View style={styles.form}>
+              <Text style={type.heading}>Chủ hàng, chủ xe đăng nhập</Text>
+              {signOutNotice ? <Banner tone="neutral">{signOutNotice}</Banner> : null}
+              {formError ? <Banner tone="danger">{formError}</Banner> : null}
+
+              <TextField
+                label="Số điện thoại"
+                required
+                value={phone}
+                onChangeText={(value) => {
+                  setPhone(value);
+                  setErrors((current) => ({ ...current, phone: undefined }));
+                }}
+                error={errors.phone}
+                placeholder="09xxxxxxxx"
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                textContentType="telephoneNumber"
+                returnKeyType="next"
+              />
+              <TextField
+                label="Mật khẩu"
+                required
+                value={password}
+                onChangeText={(value) => {
+                  setPassword(value);
+                  setErrors((current) => ({ ...current, password: undefined }));
+                }}
+                error={errors.password}
+                secureTextEntry
+                autoComplete="password"
+                textContentType="password"
+                onSubmitEditing={submit}
+                returnKeyType="go"
+              />
+              <Button label={submitting ? 'Đang đăng nhập...' : 'Đăng nhập'} onPress={submit} loading={submitting} />
             </View>
-          ) : null}
+          </Reveal>
 
-          <View>
-            <Text style={styles.label} nativeID="phone-label">Số điện thoại</Text>
-            <TextInput
-              accessibilityLabelledBy="phone-label"
-              value={phone}
-              onChangeText={(value) => {
-                setPhone(value);
-                setErrors((current) => ({ ...current, phone: undefined }));
-              }}
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-              style={[styles.input, errors.phone && styles.inputError]}
-              placeholder="09xxxxxxxx"
-              placeholderTextColor={colors.inkSubtle}
-              returnKeyType="next"
-            />
-            <FieldError message={errors.phone} />
-          </View>
-          <View>
-            <Text style={styles.label} nativeID="password-label">Mật khẩu</Text>
-            <TextInput
-              accessibilityLabelledBy="password-label"
-              value={password}
-              onChangeText={(value) => {
-                setPassword(value);
-                setErrors((current) => ({ ...current, password: undefined }));
-              }}
-              secureTextEntry
-              autoComplete="password"
-              textContentType="password"
-              style={[styles.input, errors.password && styles.inputError]}
-              onSubmitEditing={submit}
-              returnKeyType="go"
-            />
-            <FieldError message={errors.password} />
-          </View>
-          <Button label={submitting ? 'Đang đăng nhập...' : 'Đăng nhập'} onPress={submit} loading={submitting} />
+          {/* Drivers have no account: they enter the one-time code their carrier sent. Secondary on purpose, one navy action per view. */}
+          <Reveal index={2} style={styles.driverBlock}>
+            <View style={styles.divider}>
+              <View style={styles.rule} />
+              <Text style={type.caption}>hoặc</Text>
+              <View style={styles.rule} />
+            </View>
+            <View style={styles.driver}>
+              <View style={styles.driverText}>
+                <Text style={type.heading}>Tôi là tài xế</Text>
+                <Text style={type.secondary}>Nhập mã nhận chuyến chủ xe gửi. Không cần số điện thoại hay mật khẩu.</Text>
+              </View>
+              <Button label="Nhập mã nhận chuyến" variant="secondary" onPress={() => router.push('/driver-code')} />
+            </View>
+          </Reveal>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -104,15 +114,16 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.canvas },
-  content: { padding: space.xl, gap: space.lg, maxWidth: 480, width: '100%', alignSelf: 'center' },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.lg },
-  brandMark: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
-  brandMarkText: { color: '#fff', fontFamily: fonts.bold, fontSize: 18 },
-  brandName: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
-  label: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, marginBottom: 6 },
-  input: { minHeight: TOUCH, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md, paddingHorizontal: space.md, fontSize: 16, color: colors.ink, backgroundColor: colors.surface },
-  inputError: { borderColor: colors.danger, borderWidth: 2 },
-  alert: { backgroundColor: colors.dangerSoft, borderRadius: radius.md, padding: space.md },
-  driverCard: { padding: space.lg, borderRadius: radius.lg, backgroundColor: colors.brandSoft, gap: space.sm },
-  alertText: { color: colors.danger, fontSize: 14, fontFamily: fonts.semibold },
+  content: { padding: space.lg, gap: space.lg, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  hero: { backgroundColor: colors.band, borderRadius: radius.lg, padding: space.xl, gap: space.sm, borderWidth: 1, borderColor: colors.bandPressed },
+  mark: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
+  heroName: { fontSize: 12, fontFamily: fonts.semibold, color: colors.onBandSoft, textTransform: 'uppercase', letterSpacing: 0.6 },
+  heroTitle: { fontSize: 24, fontFamily: fonts.bold, color: colors.surface, lineHeight: 30 },
+  heroBody: { fontSize: 14, fontFamily: fonts.regular, color: colors.onBandSoft, lineHeight: 20 },
+  form: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  rule: { flex: 1, height: 1, backgroundColor: colors.line },
+  driver: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  driverText: { gap: 4 },
+  driverBlock: { gap: space.lg },
 });

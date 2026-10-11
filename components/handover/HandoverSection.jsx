@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
   form: { gap: space.sm },
   label: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, marginTop: space.xs },
   input: {
-    minHeight: TOUCH, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md,
-    paddingHorizontal: space.md, paddingVertical: space.sm, fontSize: 15, color: colors.ink, backgroundColor: colors.surface,
+    minHeight: TOUCH, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md,
+    paddingHorizontal: space.md, paddingVertical: space.sm, fontSize: 15, fontFamily: fonts.regular, color: colors.ink, backgroundColor: colors.surfaceSunken,
   },
   multiline: { minHeight: TOUCH * 2, textAlignVertical: 'top' },
   choiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

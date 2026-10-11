@@ -1,7 +1,8 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold } from '@expo-google-fonts/be-vietnam-pro';
+import { JetBrainsMono_500Medium, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -10,7 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, scheme } from '@/constants/theme';
 import { canAccessRoute } from '@/lib/roles';
 import OwnerAvatarMenu from '@/components/OwnerAvatarMenu';
 
@@ -20,14 +21,15 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
 
 SplashScreen.preventAutoHideAsync();
 
+const baseTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
 const navigationTheme = {
-  ...DefaultTheme,
-  colors: { ...DefaultTheme.colors, primary: colors.brand, background: colors.canvas, card: colors.surface, text: colors.ink, border: colors.line },
+  ...baseTheme,
+  colors: { ...baseTheme.colors, primary: colors.brand, background: colors.canvas, card: colors.surface, text: colors.ink, border: colors.line },
 };
 
 export default function RootLayout() {
-  // DESIGN.md typeface; each weight is a separate family (see constants/theme.js fonts).
-  const [loaded, error] = useFonts({ ...FontAwesome.font, BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold });
+  // DESIGN.md typeface plus the mono face for figures; each weight is a separate family (see constants/theme.js fonts).
+  const [loaded, error] = useFonts({ ...FontAwesome6.font, BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold, JetBrainsMono_500Medium, JetBrainsMono_700Bold });
 
   useEffect(() => {
     if (error) throw error;
@@ -39,7 +41,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <ThemeProvider value={navigationTheme}>
-          <StatusBar style="dark" />
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
           <AuthGate />
         </ThemeProvider>
       </AuthProvider>

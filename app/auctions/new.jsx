@@ -141,6 +141,7 @@ export default function CreateAuctionScreen() {
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <Stack.Screen options={{ title: 'Tạo phiên đấu giá' }} />
       <Screen bottomInset={140}>
+        <Text style={type.code}>Bước {step + 1}/{STEPS.length}</Text>
         <View style={styles.steps} accessibilityRole="progressbar" accessibilityLabel={`Bước ${step + 1}/${STEPS.length}: ${STEPS[step]}`}>
           {STEPS.map((label, index) => (
             <Pressable key={label} onPress={() => index < step && setStep(index)} disabled={index >= step} style={styles.step} accessibilityRole="button" accessibilityLabel={`Bước ${index + 1}: ${label}`}>

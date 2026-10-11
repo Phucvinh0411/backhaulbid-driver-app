@@ -1,4 +1,4 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { MenuItem, Screen, useResource } from '@/components/ui';
@@ -7,7 +7,7 @@ import { roleLabel } from '@/lib/roles';
 import { notificationApi } from '@/lib/services';
 import { colors, radius, space, type, fonts } from '@/constants/theme';
 
-const icon = (name) => <FontAwesome name={name} size={20} color={colors.brand} style={{ width: 24, textAlign: 'center' }} />;
+const icon = (name) => <FontAwesome6 name={name} size={16} color={colors.brand} />;
 
 export default function MoreTab() {
   const router = useRouter();
@@ -21,11 +21,11 @@ export default function MoreTab() {
     {
       title: 'Giao dịch',
       items: [
-        { icon: 'bar-chart', label: 'Thống kê', hint: 'Xu hướng đấu giá, chuyến và đội xe', href: '/statistics' },
-        ...(shipper ? [] : [{ icon: 'credit-card', label: 'Ví và thanh toán', hint: 'Số dư, nạp, rút, lịch sử', href: '/wallet' }]),
-        { icon: 'file-text-o', label: 'Hợp đồng', hint: 'Xem và ký hợp đồng vận chuyển', href: '/contracts' },
-        ...(shipper ? [] : [{ icon: 'list-alt', label: 'Phiên tôi đã đăng ký', hint: 'Thanh toán, vào phòng, kết quả', href: '/registrations' }]),
-        { icon: 'exclamation-triangle', label: 'Khiếu nại', hint: 'Gửi và theo dõi khiếu nại', href: '/complaints' },
+        { icon: 'chart-column', label: 'Thống kê', hint: 'Xu hướng đấu giá, chuyến và đội xe', href: '/statistics' },
+        ...(shipper ? [] : [{ icon: 'wallet', label: 'Ví và thanh toán', hint: 'Số dư, nạp, rút, lịch sử', href: '/wallet' }]),
+        { icon: 'file-contract', label: 'Hợp đồng', hint: 'Xem và ký hợp đồng vận chuyển', href: '/contracts' },
+        ...(shipper ? [] : [{ icon: 'list-check', label: 'Phiên tôi đã đăng ký', hint: 'Thanh toán, vào phòng, kết quả', href: '/registrations' }]),
+        { icon: 'triangle-exclamation', label: 'Khiếu nại', hint: 'Gửi và theo dõi khiếu nại', href: '/complaints' },
         { icon: 'bell', label: 'Thông báo', hint: 'Phiên, hợp đồng và chuyến', href: '/notifications', badge: count ? String(count) : null },
       ],
     },
@@ -33,8 +33,8 @@ export default function MoreTab() {
       title: 'Hồ sơ',
       items: [
         ...(shipper ? [{ icon: 'book', label: 'Sổ địa chỉ kho', hint: 'Kho thường dùng khi tạo phiên', href: '/addresses' }] : []),
-        { icon: 'building-o', label: 'Hồ sơ doanh nghiệp', hint: 'Xác thực người đại diện và doanh nghiệp', href: '/company' },
-        { icon: 'id-card-o', label: 'Quét QR xác thực người đại diện', hint: 'Đọc căn cước gắn chip bằng NFC', href: '/verification' },
+        { icon: 'building', label: 'Hồ sơ doanh nghiệp', hint: 'Xác thực người đại diện và doanh nghiệp', href: '/company' },
+        { icon: 'id-card', label: 'Quét QR xác thực người đại diện', hint: 'Đọc căn cước gắn chip bằng NFC', href: '/verification' },
       ],
     },
   ];
@@ -60,5 +60,5 @@ export default function MoreTab() {
 const styles = StyleSheet.create({
   header: { gap: 2 },
   groupTitle: { fontSize: 13, fontFamily: fonts.bold, color: colors.inkMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  group: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, overflow: 'hidden' },
+  group: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.surface },
 });

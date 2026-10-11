@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { isDriverSession, scopeKey } from '@/lib/sessionModel';
 import OwnerDashboard from '@/components/OwnerDashboard';
 import { getTrackingState, subscribeTracking } from '@/lib/driverTracking';
+import { Reveal } from '@/components/motion';
 
 export default function TripsHome() {
   const { session } = useAuth();
@@ -59,16 +60,19 @@ function DriverTripsHome() {
       )}
 
       {current && (
-        <Band eyebrow="Cần làm ngay" title={`${current.pickupLocation || '?'} → ${current.deliveryLocation || '?'}`}>
+        // The pulsing LIVE marker is shown only while this trip's GPS is actually being shared.
+        <Reveal>
+        <Band eyebrow="Cần làm ngay" live={sharing.active?.tripId === current.id} title={`${current.pickupLocation || '?'} → ${current.deliveryLocation || '?'}`}>
           <StatusBadge {...statusOf(current.status)} />
           <Text style={styles.bandNext}>{NEXT_BY_STATUS[current.status] || statusOf(current.status).label}</Text>
-          <Text style={[styles.bandMeta, type.tabular]}>
+          <Text style={styles.bandMono}>
             Chuyến #{shortId(current.id)}
             {current.expectedDeliveryAt ? ` · hạn giao ${formatDateTime(current.expectedDeliveryAt)}` : ''}
           </Text>
           <Text style={styles.bandMeta}>{sharing.active?.tripId === current.id ? `Đang chia sẻ GPS${sharing.mode === 'background' ? ' cả khi khóa màn hình' : ' khi app mở'}.` : 'Mở chuyến để bật chia sẻ vị trí.'}</Text>
           <Button label="Mở chuyến" variant="band" onPress={() => router.push(`/trips/${current.id}`)} />
         </Band>
+        </Reveal>
       )}
 
       {others.length > 0 && (
@@ -95,6 +99,7 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
   bandNext: { fontSize: 16, fontFamily: fonts.semibold, color: colors.surface, lineHeight: 22 },
   bandMeta: { fontSize: 13, fontFamily: fonts.regular, color: colors.onBandSoft },
+  bandMono: { fontSize: 13, fontFamily: fonts.mono, color: colors.onBandSoft, fontVariant: ['tabular-nums'] },
   nextBox: { backgroundColor: colors.brandSoft, borderRadius: radius.md, padding: space.md, gap: 4 },
   nextLabel: { fontSize: 13, fontFamily: fonts.bold, color: colors.brand },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 64, paddingVertical: space.sm, borderTopWidth: 1, borderTopColor: colors.line },

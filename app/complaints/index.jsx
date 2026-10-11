@@ -42,8 +42,8 @@ export default function ComplaintsScreen() {
         {state === 'ready' && items.length === 0 && <StateView title="Chưa có khiếu nại phù hợp" message="Gửi khiếu nại khi có vấn đề với một chuyến vận chuyển." />}
         {items.map((item) => (
           <Card key={item.id} onPress={() => router.push(`/complaints/${item.id}`)} accessibilityLabel={item.title}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
-              <Text style={[type.caption, type.tabular]}>#{shortId(item.id)} · chuyến #{shortId(item.tripId)}</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm }}>
+              <Text style={type.code}>#{shortId(item.id)} · chuyến #{shortId(item.tripId)}</Text>
               <StatusBadge {...getComplaintStatusMeta(item.status)} />
             </View>
             <Text style={{ fontSize: 16, fontFamily: fonts.bold, color: colors.ink }}>{item.title}</Text>
@@ -98,7 +98,7 @@ function CreateComplaintSheet({ role, initialTripId, onClose, onCreated }) {
             <Pressable key={trip.id} accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => set('tripId')(trip.id)}
               style={{ borderWidth: 1, borderColor: selected ? colors.brand : colors.line, backgroundColor: selected ? colors.brandSoft : colors.surface, borderRadius: radius.md, padding: space.sm }}>
               <Text style={{ fontFamily: fonts.semibold, color: colors.ink }} numberOfLines={1}>{trip.pickupLocation} → {trip.deliveryLocation}</Text>
-              <Text style={[type.caption, type.tabular]}>#{shortId(trip.id)} · {formatDateTime(trip.createdAt)}</Text>
+              <Text style={type.code}>#{shortId(trip.id)} · {formatDateTime(trip.createdAt)}</Text>
             </Pressable>
           );
         })}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteBlock, StateView, StatusBadge } from '@/components/ui';
+import { Reveal } from '@/components/motion';
 import { useAuth } from '@/lib/auth';
 import { useTrips } from '@/lib/useTrips';
 import { formatDateTime, shortId, statusOf } from '@/lib/trips';
@@ -49,18 +50,20 @@ export default function BusinessHome() {
       {state === 'ready' && error ? <Text style={[type.caption, { color: colors.warning }]}>Chưa làm mới được: {error}</Text> : null}
       {state === 'ready' && list.length === 0 && <StateView title={EMPTY[current]} message="Chuyến được tạo sau khi trao thầu; kéo xuống để làm mới." />}
 
-      {list.map((trip) => (
-        <Pressable key={trip.id} accessibilityRole="button" accessibilityLabel={`Chuyến ${shortId(trip.id)}, ${statusOf(trip.status).label}`}
-          onPress={() => router.push(`/business/trips/${trip.id}`)}
-          style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surfaceSunken }]}>
-          <View style={styles.cardHead}>
-            <StatusBadge {...statusOf(trip.status)} />
-            <Text style={[type.caption, type.tabular]}>#{shortId(trip.id)}</Text>
-          </View>
-          <RouteBlock from={trip.pickupLocation} to={trip.deliveryLocation} />
-          <Text style={styles.next}>{getOwnerNextStep(trip, role)}</Text>
-          <Text style={[type.caption, type.tabular]}>Cập nhật {formatDateTime(trip.updatedAt || trip.createdAt)}{trip.expectedDeliveryAt ? ` · Hạn giao ${formatDateTime(trip.expectedDeliveryAt)}` : ''}</Text>
-        </Pressable>
+      {list.map((trip, index) => (
+        <Reveal key={trip.id} index={index}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`Chuyến ${shortId(trip.id)}, ${statusOf(trip.status).label}`}
+            onPress={() => router.push(`/business/trips/${trip.id}`)}
+            style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surfaceSunken }]}>
+            <View style={styles.cardHead}>
+              <StatusBadge {...statusOf(trip.status)} />
+              <Text style={type.code}>#{shortId(trip.id)}</Text>
+            </View>
+            <RouteBlock from={trip.pickupLocation} to={trip.deliveryLocation} />
+            <Text style={styles.next}>{getOwnerNextStep(trip, role)}</Text>
+            <Text style={type.code}>Cập nhật {formatDateTime(trip.updatedAt || trip.createdAt)}{trip.expectedDeliveryAt ? ` · Hạn giao ${formatDateTime(trip.expectedDeliveryAt)}` : ''}</Text>
+          </Pressable>
+        </Reveal>
       ))}
 
     </ScrollView>
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
   tab: { flex: 1, minHeight: TOUCH, borderRadius: radius.md, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   tabSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
   tabText: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
-  tabCount: { fontSize: 12, color: colors.inkMuted, fontVariant: ['tabular-nums'] },
+  tabCount: { fontSize: 12, color: colors.inkMuted, fontFamily: fonts.mono, fontVariant: ['tabular-nums'] },
   card: { backgroundColor: colors.surface, borderColor: colors.line, borderWidth: 1, borderRadius: radius.lg, padding: space.lg, gap: space.sm },
   cardHead: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
   next: { fontSize: 14, color: colors.brand, fontFamily: fonts.semibold },

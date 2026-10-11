@@ -38,14 +38,14 @@ export default function ContractsScreen() {
         {state === 'ready' && visible.length === 0 && <StateView title="Không có hợp đồng trong mục này" message="Hợp đồng được tạo tự động khi phiên đấu giá trao thầu." />}
         {visible.map((contract) => (
           <Card key={contract.backendId} onPress={() => router.push(`/contracts/${contract.backendId}`)} accessibilityLabel={`Hợp đồng ${contract.id}`}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm, alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.sm, alignItems: 'center' }}>
               <Text style={[type.caption, type.tabular, { flex: 1 }]} numberOfLines={1}>{contract.id}</Text>
               <StatusBadge {...(CONTRACT_VIEW_STATUS[contract.status] || { label: contract.status, tone: 'neutral' })} />
             </View>
             <Text style={{ fontSize: 15, fontFamily: fonts.bold, color: colors.ink }}>{contract.origin} → {contract.destination}</Text>
-            <Text style={[type.secondary, type.tabular]}>Giá trị {contract.value} · tạo {contract.date}</Text>
+            <Text style={type.code}>Giá trị {contract.value} · tạo {contract.date}</Text>
             {contract.status === 'PENDING_SIGNATURE' ? (
-              <Text style={{ fontSize: 14, fontFamily: fonts.bold, color: contract.canSign ? colors.danger : colors.inkMuted }}>
+              <Text style={{ fontSize: 14, fontFamily: fonts.bold, color: contract.canSign ? colors.brand : colors.inkMuted }}>
                 {contract.pendingMessage}{contract.signingDeadlineAt ? ` Hạn ký ${formatDateTime(contract.signingDeadlineAt)}.` : ''}
               </Text>
             ) : null}

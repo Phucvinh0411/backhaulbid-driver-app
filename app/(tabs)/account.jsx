@@ -96,7 +96,7 @@ function OwnerAccount() {
         </Section> : null}
       </> : null}
       {section === 'representative' ? <>
-        <Section title="Người đại diện" right={<StatusBadge {...(representative?.status === 'VERIFIED' && representative?.verificationMethod === 'LOCAL_NFC_DEVELOPMENT' ? { label: 'Kiểm tra NFC hoàn tất', tone: 'success' } : representative?.status === 'VERIFIED' && representative?.verificationMethod === 'MANUAL_DOCUMENT_REVIEW' ? { label: 'Hồ sơ đã duyệt', tone: 'success' } : REP_STATUS[representative?.status] || { label: 'Chưa xác thực', tone: 'neutral' })} />}>
+        <Section title="Người đại diện" right={<StatusBadge {...(representative?.status === 'VERIFIED' && ['LOCAL_NFC_DEVELOPMENT', 'NFC_AUTO'].includes(representative?.verificationMethod) ? { label: 'Kiểm tra NFC hoàn tất', tone: 'success' } : representative?.status === 'VERIFIED' && representative?.verificationMethod === 'MANUAL_DOCUMENT_REVIEW' ? { label: 'Hồ sơ đã duyệt', tone: 'success' } : REP_STATUS[representative?.status] || { label: 'Chưa xác thực', tone: 'neutral' })} />}>
           {representative?.fullName ? <Row label="Họ tên đã xác thực" value={representative.fullName} /> : null}
           {representative?.failureReason ? <Text style={type.secondary}>{representative.failureReason}</Text> : null}
         </Section>

@@ -332,7 +332,7 @@ function BusinessTrip({ role }) {
               {proofs.map((proof) => (
                 <View key={proof.id} style={styles.proofCard}>
                   <ProofImage url={proof.imageUrl} style={styles.proofImage} label={proof.note || 'Ảnh bằng chứng giao hàng'} />
-                  <Text style={[type.caption, type.tabular]}>{formatDateTime(proof.uploadedAt)}</Text>
+                  <Text style={type.code}>{formatDateTime(proof.uploadedAt)}</Text>
                   {proof.note ? <Text style={type.secondary}>{proof.note}</Text> : null}
                 </View>
               ))}
@@ -358,7 +358,6 @@ function BusinessTrip({ role }) {
           {shipperAccept ? <Button label="Xác nhận đã nhận hàng" onPress={() => openSheet('accept')} disabled={busy} /> : null}
           {role === 'SHIPPER' && trip.canCancelForLateDelivery ? <Button label="Hủy chuyến do giao trễ" variant="danger" onPress={() => openSheet('lateCancel')} disabled={busy} /> : null}
           {role === 'CARRIER' && canAssign ? <Button label={trip.driverId ? 'Đổi tài xế' : 'Phân công tài xế'} variant={trip.driverId ? 'secondary' : 'primary'} onPress={openAssign} disabled={busy} /> : null}
-          {canReissue ? <Button label="Cấp lại mã nhận chuyến" variant="secondary" onPress={reissueCode} disabled={busy} /> : null}
           {role === 'CARRIER' && primary ? (
             <Button label={primary.label} onPress={() => (primary.proof ? openSheet('proof') : (setConfirmStep(primary), openSheet('confirm')))} disabled={busy} />
           ) : null}
@@ -368,6 +367,8 @@ function BusinessTrip({ role }) {
               {trip.status !== 'DELIVERED' ? <Button label="Báo sự cố" variant="warning" onPress={() => openSheet('incident')} disabled={busy} style={{ flex: 1 }} /> : null}
             </View>
           ) : null}
+          {/* Rarely needed, so it sits last instead of above the main action. */}
+          {canReissue ? <Button label="Cấp lại mã nhận chuyến" variant="secondary" onPress={reissueCode} disabled={busy} /> : null}
         </View>
       ) : null}
 
@@ -482,9 +483,10 @@ const styles = StyleSheet.create({
   proofImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md, backgroundColor: colors.surfaceSunken },
   bar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: space.lg, paddingTop: space.md, gap: space.sm },
   barRow: { flexDirection: 'row', gap: space.sm },
-  textarea: { minHeight: TOUCH * 2, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md, padding: space.md, fontSize: 16, color: colors.ink, textAlignVertical: 'top' },
-  input: { minHeight: TOUCH, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: radius.md, paddingHorizontal: space.md, fontSize: 16, color: colors.ink },
+  // DESIGN.md soft-filled input, same as TextField.
+  textarea: { minHeight: TOUCH * 2, backgroundColor: colors.surfaceSunken, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md, padding: space.md, fontSize: 16, fontFamily: fonts.regular, color: colors.ink, textAlignVertical: 'top' },
+  input: { minHeight: TOUCH, backgroundColor: colors.surfaceSunken, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md, paddingHorizontal: space.md, fontSize: 16, fontFamily: fonts.regular, color: colors.ink },
   driverRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: TOUCH + 8, borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, padding: space.md },
   link: { color: colors.brand, fontFamily: fonts.bold },
-  code: { fontSize: 13, fontFamily: fonts.medium, color: colors.ink, textAlign: 'center', backgroundColor: colors.surfaceSunken, borderRadius: radius.md, padding: space.sm },
+  code: { fontSize: 13, fontFamily: fonts.mono, color: colors.ink, textAlign: 'center', backgroundColor: colors.surfaceSunken, borderRadius: radius.md, padding: space.sm },
 });
