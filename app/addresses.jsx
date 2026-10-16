@@ -98,7 +98,7 @@ export default function AddressBookScreen() {
           </View>
         ) : null}
         <TextField label="Địa chỉ chi tiết" required value={form.detail} onChangeText={set('detail')} error={errors.detail} multiline />
-        <MapPointField label="Pin kho" point={form} onChange={(point) => setForm((current) => ({ ...current, latitude: point?.latitude ?? null, longitude: point?.longitude ?? null, coordinateSource: point?.coordinateSource ?? null, coordinateConfirmedAt: point?.coordinateConfirmedAt ?? null }))} />
+        <MapPointField label="Pin kho" point={form} address={{ detail: form.detail, province: form.province }} onChange={(point) => setForm((current) => ({ ...current, latitude: point?.latitude ?? null, longitude: point?.longitude ?? null, coordinateSource: point?.coordinateSource ?? null, coordinateConfirmedAt: point?.coordinateConfirmedAt ?? null }))} />
         <TextField label="Người liên hệ" required value={form.contactName} onChangeText={set('contactName')} error={errors.contactName} />
         <TextField label="Số điện thoại" required value={form.contactPhone} onChangeText={set('contactPhone')} error={errors.contactPhone} keyboardType="phone-pad" />
         {sheetError ? <Banner tone="danger">{sheetError}</Banner> : null}
