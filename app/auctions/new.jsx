@@ -198,7 +198,7 @@ export default function CreateAuctionScreen() {
             <TextField label="Tên kho / địa điểm" required value={form[`${prefix}LocationName`]} onChangeText={set(`${prefix}LocationName`)} />
             <TextField label="Tỉnh / thành phố" required value={form[`${prefix}Province`]} onChangeText={set(`${prefix}Province`)} />
             <TextField label="Địa chỉ chi tiết" required value={form[`${prefix}Address`]} onChangeText={set(`${prefix}Address`)} multiline />
-            <MapPointField label={prefix === 'from' ? 'Pin kho lấy hàng' : 'Pin kho giao hàng'} point={{ latitude: form[`${prefix}Latitude`], longitude: form[`${prefix}Longitude`] }} onChange={(point) => setForm((current) => ({ ...current, [`${prefix}Latitude`]: point?.latitude ?? null, [`${prefix}Longitude`]: point?.longitude ?? null, [`${prefix}CoordinateConfirmedAt`]: point?.coordinateConfirmedAt ?? null }))} />
+            <MapPointField label={prefix === 'from' ? 'Pin kho lấy hàng' : 'Pin kho giao hàng'} point={{ latitude: form[`${prefix}Latitude`], longitude: form[`${prefix}Longitude`] }} address={{ detail: form[`${prefix}Address`], province: form[`${prefix}Province`] }} onChange={(point) => setForm((current) => ({ ...current, [`${prefix}Latitude`]: point?.latitude ?? null, [`${prefix}Longitude`]: point?.longitude ?? null, [`${prefix}CoordinateConfirmedAt`]: point?.coordinateConfirmedAt ?? null }))} />
             <View style={styles.pair}>
               <TextField style={{ flex: 1 }} label="Người liên hệ" value={form[`${prefix}ContactName`]} onChangeText={set(`${prefix}ContactName`)} />
               <TextField style={{ flex: 1 }} label="Số điện thoại" value={form[`${prefix}ContactPhone`]} onChangeText={set(`${prefix}ContactPhone`)} keyboardType="phone-pad" />
