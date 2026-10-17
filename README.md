@@ -123,7 +123,7 @@ Script cũng nhận `-BuildJavaHome`, `-GradleUserHome` và `-AndroidSdkPath` n�
 
 Lệnh Gradle `:app:assembleDebug` tạo build phát triển, không tự nhúng JavaScript; cần Metro để mở app. Dùng script `build-wifi-test.ps1` khi cần APK tự chứa.
 
-Origin gateway được dùng cho cả JavaScript và native upload. HTTP Wi-Fi chỉ được chấp nhận trong debug, đúng IPv4 private và cổng đã cấu hình khi build qua `BACKHAULBID_DEBUG_API_ORIGIN`. Bản release tiếp tục yêu cầu HTTPS. Quyền CAMERA/NFC và đăng nhập cùng tài khoản trên web/app vẫn bắt buộc.
+Origin gateway được dùng cho cả JavaScript và native upload. HTTP Wi-Fi chỉ được chấp nhận trong debug, đúng IPv4 private và cổng đã cấu hình khi build qua `BACKHAULBID_DEBUG_API_ORIGIN`. Nếu không đặt biến này, bản debug tự lấy `EXPO_PUBLIC_API_BASE_URL` trong `.env` khi đó là địa chỉ `http://<IPv4 nội bộ>:<cổng>`; đổi IP thì sửa `.env` rồi build lại. Bản release tiếp tục yêu cầu HTTPS. Quyền CAMERA/NFC và đăng nhập cùng tài khoản trên web/app vẫn bắt buộc.
 
 Mở web trên máy tính tại `http://localhost:3000`, vào xác thực người đại diện để tạo QR. Trên app, đăng nhập cùng tài khoản Chủ hàng/Chủ xe, mở màn xác thực và quét QR; nhập mã app hiển thị vào web để cho phép điện thoại thu thập. Tài xế dùng cùng APK với màn nhận chuyến bằng PIN riêng.
 
