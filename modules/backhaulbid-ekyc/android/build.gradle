@@ -1,0 +1,39 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+group = 'vn.backhaulbid.identity'
+version = '0.2.4-dev'
+def localHttpOrigin = /http:\/\/(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}\/?/
+def debugApiOrigin = System.getenv('BACKHAULBID_DEBUG_API_ORIGIN') ?: ''
+if (debugApiOrigin && !(debugApiOrigin ==~ localHttpOrigin)) {
+  throw new GradleException('BACKHAULBID_DEBUG_API_ORIGIN must be a local IPv4 HTTP origin.')
+}
+// Without the variable, debug builds reuse the app's .env API origin when it is a LAN HTTP address,
+// so the native upload accepts the same gateway the JavaScript side already calls.
+// HTTPS or any other value is ignored here; release builds still require HTTPS.
+if (!debugApiOrigin) {
+  def envFile = new File(rootProject.projectDir.parentFile, '.env')
+  if (envFile.isFile()) {
+    def line = envFile.readLines('UTF-8').find { it.trim().startsWith('EXPO_PUBLIC_API_BASE_URL=') }
+    def fromEnv = line ? line.substring(line.indexOf('=') + 1).trim().replaceAll(/^["']|["']$/, '') : ''
+    if (fromEnv ==~ localHttpOrigin) debugApiOrigin = fromEnv
+  }
+}
+android {
+  namespace 'vn.backhaulbid.ekyc'
+  buildFeatures { buildConfig true }
+  defaultConfig {
+    minSdkVersion 26
+    versionCode 1
+    versionName '0.2.4-dev'
+    buildConfigField 'String', 'LOCAL_TEST_API_ORIGIN', '""'
+  }
+  buildTypes {
+    debug { buildConfigField 'String', 'LOCAL_TEST_API_ORIGIN', '"' + debugApiOrigin + '"' }
+  }
+}
+dependencies {
+  implementation 'vn.backhaulbid.identity:ekyc-android:0.2.4-dev'
+  testImplementation 'junit:junit:4.13.2'
+}

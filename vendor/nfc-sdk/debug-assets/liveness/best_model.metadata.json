@@ -1,0 +1,23 @@
+{
+  "model_id": "minifasnetv2se",
+  "model_version": "best-98.20",
+  "status": "DEVELOPMENT_EVALUATION_ONLY",
+  "upstream_repository": "https://github.com/minivision-ai/Silent-Face-Anti-Spoofing",
+  "upstream_commit": "fa6489fb221dcf6b803095ab4b15a0fa0f56cfe5",
+  "model_sha256": "AF2381B88F38769222ED93379E12444E2A50814575DE1C46170DE570C55A42B6",
+  "architecture": "MiniFASNetV2SE",
+  "input_shape": [1, 3, 128, 128],
+  "input_layout": "NCHW",
+  "color_order": "RGB",
+  "normalization": "float32 / 255.0; no mean/std",
+  "crop_expansion_factor": 1.5,
+  "letterbox": "aspect-preserving; Lanczos4 upsample; Area downsample; BORDER_REFLECT_101",
+  "output_shape": [1, 2],
+  "class_order": ["LIVE", "SPOOF"],
+  "decision_score": "live_logit - spoof_logit",
+  "threshold": 0.0,
+  "threshold_status": "development-only; not calibrated for production",
+  "code_license": "MIT (upstream; verify before distribution)",
+  "weight_license": "provenance review required",
+  "dataset_provenance": "provenance review required"
+}

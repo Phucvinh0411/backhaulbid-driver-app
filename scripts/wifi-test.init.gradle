@@ -1,0 +1,20 @@
+// Bundle JavaScript into the local debug APK; keep debug-only NFC models/policy.
+allprojects { project ->
+    if (project.name == 'app') {
+        project.pluginManager.withPlugin('com.facebook.react') {
+            project.extensions.getByName('react').debuggableVariants.set([])
+            // Keep Metro from spawning a worker for every CPU on small local hosts.
+            project.extensions.getByName('react').extraPackagerArgs.addAll(['--max-workers', '2'])
+            // An IP change must invalidate the bundled JS even when source files
+            // are unchanged. Expo resolves these production dotenv files itself.
+            project.tasks.configureEach { task ->
+                if (task.name == 'createBundleDebugJsAndAssets') {
+                    task.inputs.files(project.fileTree(dir: project.rootProject.projectDir.parentFile,
+                        includes: ['.env', '.env.local', '.env.production', '.env.production.local']))
+                    task.inputs.property('backhaulbidApiOrigin', System.getenv('EXPO_PUBLIC_API_BASE_URL') ?: '')
+                    task.inputs.property('backhaulbidMapTile', System.getenv('EXPO_PUBLIC_MAP_TILE_URL') ?: '')
+                }
+            }
+        }
+    }
+}
