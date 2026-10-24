@@ -13,7 +13,26 @@ const day = new Intl.DateTimeFormat('vi-VN', { weekday: 'short', day: '2-digit',
 
 export default function JourneyOverview({ trip, events = [], milestones = [], nextStep, children }) {
   const { tracking, points, sampling, error } = useTripTracking(trip.id);
-  const ordered = useMemo(() => [...events].sort((a, b) => Date.parse(b.recordedAt) - Date.parse(a.recordedAt)), [events]);
+  const ordered = useMemo(() => {
+    const combined = [
+      ...events.map((e) => ({
+        ...e,
+        title: EVENT_LABELS[e.eventType] || e.eventType,
+        isMilestone: false,
+      })),
+      ...milestones
+        .filter((m) => m.status === 'REACHED' && m.reachedAt)
+        .map((m) => ({
+          id: `milestone-${m.id}`,
+          eventType: 'MILESTONE_CHECKIN',
+          title: `Đã check-in: ${m.milestoneName}`,
+          recordedAt: m.reachedAt,
+          note: m.actualLat != null && m.actualLng != null ? `Tọa độ GPS: ${m.actualLat.toFixed(5)}, ${m.actualLng.toFixed(5)}` : null,
+          isMilestone: true,
+        })),
+    ];
+    return combined.sort((a, b) => Date.parse(b.recordedAt) - Date.parse(a.recordedAt));
+  }, [events, milestones]);
   // A poll can arrive while the route is still being fetched. Reuse the last road geometry only for
   // the same trip, route version and anchor pair; "no route"/"rejected" drops it. No straight line.
   const lastRoad = useRef(null);
@@ -36,7 +55,7 @@ export default function JourneyOverview({ trip, events = [], milestones = [], ne
     <View style={styles.hero}>
       <Text style={styles.eyebrow}>THEO DÕI CHUYẾN #{shortId(trip.id)}</Text>
       <Text accessibilityRole="header" style={styles.status}>{status.label}</Text>
-      <Text style={type.secondary}>{latestEvent ? `${EVENT_LABELS[latestEvent.eventType] || latestEvent.eventType} · ${formatDateTime(latestEvent.recordedAt)}` : 'Chưa có mốc hành trình được ghi.'}</Text>
+      <Text style={type.secondary}>{latestEvent ? `${latestEvent.title || EVENT_LABELS[latestEvent.eventType] || latestEvent.eventType} · ${formatDateTime(latestEvent.recordedAt)}` : 'Chưa có mốc hành trình được ghi.'}</Text>
       {trip.expectedDeliveryAt ? <Text style={[type.caption, type.tabular]}>Hạn giao {formatDateTime(trip.expectedDeliveryAt)}{trip.lateMinutes > 0 ? ` · Trễ ${trip.lateMinutes} phút` : ''}</Text> : null}
       {trip.status === 'CANCELLED' ? <Text style={[type.body, { color: colors.danger }]}>{trip.cancellationReason || 'Chuyến đã hủy.'}</Text> : <View style={styles.steps} accessibilityLabel={`Tiến trình: ${status.label}`}>
         {STEP_ORDER.map((step, index) => <View key={step} style={styles.step}>
@@ -64,8 +83,8 @@ export default function JourneyOverview({ trip, events = [], milestones = [], ne
         const group = key !== previousDay; previousDay = key;
         return <View key={event.id || `${event.eventType}:${event.recordedAt}`} style={{ gap: space.sm }}>
           {group && Number.isFinite(timestamp) ? <Text style={styles.day}>{day.format(timestamp)}</Text> : null}
-          <View style={styles.event}><View style={styles.rail}><View style={[styles.dot, index === 0 && styles.latestDot, event.eventType === 'INCIDENT_REPORTED' && { borderColor: colors.warning, backgroundColor: colors.warningSoft }]} />{index < ordered.length - 1 ? <View style={styles.line} /> : null}</View>
-            <View style={{ flex: 1, gap: 4, paddingBottom: space.lg }}><Text style={[type.body, { fontFamily: index === 0 ? fonts.bold : fonts.semibold, color: index === 0 ? colors.brand : colors.ink }]}>{EVENT_LABELS[event.eventType] || event.eventType}</Text><Text style={[type.caption, type.tabular]}>{formatDateTime(event.recordedAt)}</Text>{event.note ? <Text style={type.secondary}>{event.note}</Text> : null}{event.evidenceUrl ? <ProofImage url={event.evidenceUrl} style={{ width: '100%', height: 160, borderRadius: radius.md }} label="Bằng chứng tại mốc hành trình" /> : null}</View>
+          <View style={styles.event}><View style={styles.rail}><View style={[styles.dot, index === 0 && styles.latestDot, event.isMilestone && { borderColor: colors.success, backgroundColor: colors.successSoft }, event.eventType === 'INCIDENT_REPORTED' && { borderColor: colors.warning, backgroundColor: colors.warningSoft }]} />{index < ordered.length - 1 ? <View style={styles.line} /> : null}</View>
+            <View style={{ flex: 1, gap: 4, paddingBottom: space.lg }}><Text style={[type.body, { fontFamily: index === 0 ? fonts.bold : fonts.semibold, color: index === 0 ? colors.brand : colors.ink }]}>{event.title || EVENT_LABELS[event.eventType] || event.eventType}</Text><Text style={[type.caption, type.tabular]}>{formatDateTime(event.recordedAt)}</Text>{event.note ? <Text style={type.secondary}>{event.note}</Text> : null}{event.evidenceUrl ? <ProofImage url={event.evidenceUrl} style={{ width: '100%', height: 160, borderRadius: radius.md }} label="Bằng chứng tại mốc hành trình" /> : null}</View>
           </View>
         </View>;
       })}

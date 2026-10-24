@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Redirect, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Redirect, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { isDriverSession, scopeKey } from '@/lib/sessionModel';
 import DriverMilestoneTracker from '@/components/DriverMilestoneTracker';
-import { Section, StateView } from '@/components/ui';
+import { Button, Section, StateView } from '@/components/ui';
 import { api } from '@/lib/api';
 import { colors, radius, space, fonts } from '@/constants/theme';
 
@@ -24,12 +24,16 @@ export default function DriverMilestoneGate() {
 
 function TripMilestonesScreen() {
   const { tripId } = useLocalSearchParams();
+  const router = useRouter();
   const [milestones, setMilestones] = useState([]);
   const [tripStatus, setTripStatus] = useState(null);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+
+  const reachedCount = milestones.filter((m) => m.status === 'REACHED').length;
+  const allReached = milestones.length > 0 && reachedCount === milestones.length;
 
   const load = useCallback(
     async ({ pull = false } = {}) => {
@@ -67,6 +71,21 @@ function TripMilestonesScreen() {
           <Text style={styles.noticeText}>{notice}</Text>
         </View>
       ) : null}
+
+      {allReached ? (
+        <View style={styles.completedCard}>
+          <Text style={styles.completedTitle}>🎉 Hoàn tất toàn bộ {reachedCount}/{milestones.length} cột mốc!</Text>
+          <Text style={styles.completedText}>
+            Bạn đã check-in toàn bộ các điểm dừng trên tuyến đường và đã đến điểm giao hàng. Hãy quay lại màn hình chuyến và bấm nút <Text style={{ fontFamily: fonts.bold, color: colors.brand }}>“Gửi bằng chứng giao hàng”</Text> để hoàn tất giao hàng và chuyển trạng thái hành trình sang <Text style={{ fontFamily: fonts.bold }}>“Đã giao”</Text>.
+          </Text>
+          <Button
+            label="Về màn hình chuyến & Gửi bằng chứng"
+            onPress={() => router.back()}
+            style={{ marginTop: space.xs }}
+          />
+        </View>
+      ) : null}
+
       {state === 'loading' && <StateView kind="loading" title="Đang tải cột mốc" />}
       {state === 'error' && <StateView kind="error" title="Không tải được cột mốc" message={error} actionLabel="Thử lại" onAction={() => load()} />}
       {state === 'ready' && milestones.length === 0 && <StateView title="Chuyến chưa có cột mốc" message="Chủ xe chưa thiết lập cột mốc cho chuyến này." />}
@@ -92,4 +111,23 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.lg },
   notice: { backgroundColor: colors.successSoft, borderRadius: radius.md, padding: space.md },
   noticeText: { color: colors.success, fontFamily: fonts.semibold },
+  completedCard: {
+    backgroundColor: colors.successSoft,
+    borderColor: colors.success,
+    borderWidth: 1.5,
+    borderRadius: radius.lg,
+    padding: space.md,
+    gap: space.sm,
+  },
+  completedTitle: {
+    fontSize: 16,
+    fontFamily: fonts.bold,
+    color: colors.success,
+  },
+  completedText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: fonts.regular,
+    color: colors.ink,
+  },
 });
