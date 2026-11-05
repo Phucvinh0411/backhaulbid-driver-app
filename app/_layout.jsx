@@ -75,7 +75,6 @@ function AuthGate() {
       <Stack.Screen name="register" options={{ headerShown: false }} />
       <Stack.Screen name="driver-code" options={{ title: 'Nhập mã nhận chuyến' }} />
       <Stack.Screen name="trips/[tripId]/index" options={{ title: 'Chi tiết chuyến' }} />
-      <Stack.Screen name="trips/[tripId]/milestones" options={{ title: 'Cột mốc hành trình' }} />
       <Stack.Screen name="business/trips/[tripId]" options={{ title: 'Theo dõi chuyến' }} />
       <Stack.Screen name="verification/index" options={{ title: 'Xác thực người đại diện' }} />
       <Stack.Screen name="statistics" options={{ title: 'Thống kê' }} />

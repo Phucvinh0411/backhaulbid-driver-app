@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { isDriverSession, scopeKey } from '@/lib/sessionModel';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { Band, Button, FieldError, Section, StateView, StatusBadge } from '@/components/ui';
+import { Band, Button, FieldError, Section, StateView } from '@/components/ui';
 import { hapticSuccess, hapticWarning } from '@/lib/haptics';
 import Sheet from '@/components/Sheet';
 import ProofImage from '@/components/ProofImage';
@@ -41,12 +41,8 @@ function TripDetail() {
   const [trip, setTrip] = useState(null);
   const [events, setEvents] = useState([]);
   const [proofs, setProofs] = useState([]);
-  const [milestones, setMilestones] = useState([]);
   const [handover, setHandover] = useState(null);
   const generation = useRef(0), loading = useRef(false);
-  const milestoneCount = milestones.length;
-  const reachedMilestones = useMemo(() => milestones.filter((m) => m.status === 'REACHED').length, [milestones]);
-  const allMilestonesReached = milestoneCount > 0 && reachedMilestones === milestoneCount;
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -72,17 +68,15 @@ function TripDetail() {
       if (pull) setRefreshing(true);
       try {
         const tripData = await api.get(`/api/v1/trips/${tripId}`);
-        const [eventData, proofData, milestoneData, handoverData] = await Promise.all([
+        const [eventData, proofData, handoverData] = await Promise.all([
           api.get(`/api/v1/trips/${tripId}/journey-events`).catch(() => []),
           api.get(`/api/v1/trips/${tripId}/delivery-proofs`).catch(() => []),
-          api.get(`/api/v1/trips/${tripId}/milestones`).catch(() => []),
           api.get(`/api/v1/trips/${tripId}/handover`).catch(() => []),
         ]);
         if (token !== generation.current) return;
         setTrip(tripData);
         setEvents(asList(eventData).sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt)));
         setProofs(asList(proofData));
-        setMilestones(asList(milestoneData));
         setHandover(asList(handoverData)[0] ?? null);
         setError('');
         setState('ready');
@@ -234,15 +228,11 @@ function TripDetail() {
         {steps.primary?.hint && !closed ? (
           <Band
             eyebrow="Việc tiếp theo"
-            title={
-              allMilestonesReached && trip.status === 'IN_TRANSIT'
-                ? 'Đã check-in đủ các cột mốc. Bấm "Gửi bằng chứng giao hàng" bên dưới để hoàn tất giao hàng.'
-                : steps.primary.hint
-            }
+            title={steps.primary.hint}
           />
         ) : null}
 
-        <JourneyOverview trip={trip} events={events} milestones={milestones}>
+        <JourneyOverview trip={trip} events={events}>
           <DriverLocationControl trip={trip} />
         </JourneyOverview>
 
@@ -253,36 +243,6 @@ function TripDetail() {
         {trip.status === 'DELIVERED' ? (
           <Section title="Đã giao">
             <Text style={type.body}>Đang chờ chủ hàng xác nhận nhận hàng. Tài xế không tự hoàn thành chuyến.</Text>
-          </Section>
-        ) : null}
-
-        {milestoneCount > 0 ? (
-          <Section
-            title="Cột mốc hành trình"
-            right={
-              <StatusBadge
-                label={allMilestonesReached ? `${reachedMilestones}/${milestoneCount} hoàn tất` : `${reachedMilestones}/${milestoneCount} đã check-in`}
-                tone={allMilestonesReached ? 'success' : reachedMilestones > 0 ? 'info' : 'neutral'}
-              />
-            }
-          >
-            {allMilestonesReached ? (
-              <View style={styles.milestoneCompleteBox}>
-                <Text style={styles.milestoneCompleteTitle}>✓ Đã hoàn thành toàn bộ {reachedMilestones}/{milestoneCount} cột mốc</Text>
-                <Text style={styles.milestoneCompleteDesc}>
-                  Bạn đã check-in toàn bộ các điểm dọc tuyến đường. Bước tiếp theo: Bấm nút <Text style={{ fontFamily: fonts.bold, color: colors.brand }}>“Gửi bằng chứng giao hàng”</Text> ở bên dưới để chụp biên bản/hàng hóa và chuyển trạng thái hành trình sang <Text style={{ fontFamily: fonts.bold }}>“Đã giao”</Text>.
-                </Text>
-              </View>
-            ) : (
-              <Text style={type.secondary}>
-                Đã check-in {reachedMilestones}/{milestoneCount} cột mốc. Bấm bên dưới để mở danh sách và check-in khi đến gần từng cột mốc.
-              </Text>
-            )}
-            <Button
-              label={allMilestonesReached ? 'Xem chi tiết các mốc đã check-in' : 'Mở danh sách cột mốc'}
-              variant="secondary"
-              onPress={() => router.push(`/trips/${trip.id}/milestones`)}
-            />
           </Section>
         ) : null}
 
@@ -414,7 +374,4 @@ const styles = StyleSheet.create({
   barRow: { flexDirection: 'row', gap: space.sm },
   // DESIGN.md soft-filled input, same as TextField.
   textarea: { minHeight: TOUCH * 2, backgroundColor: colors.surfaceSunken, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md, padding: space.md, fontSize: 16, fontFamily: fonts.regular, color: colors.ink, textAlignVertical: 'top' },
-  milestoneCompleteBox: { backgroundColor: colors.successSoft, borderRadius: radius.md, padding: space.md, gap: 4, borderWidth: 1, borderColor: colors.success },
-  milestoneCompleteTitle: { fontSize: 14, fontFamily: fonts.bold, color: colors.success },
-  milestoneCompleteDesc: { fontSize: 13, lineHeight: 18, fontFamily: fonts.regular, color: colors.ink },
 });

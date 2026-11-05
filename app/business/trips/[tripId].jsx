@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { uploadImage } from '@/lib/media';
 import { formatDateTime, isClosed, statusOf } from '@/lib/trips';
-import { getCarrierSteps, getCompletionSummary, getOwnerNextStep, validateMilestone } from '@/lib/tracking';
+import { getCarrierSteps, getCompletionSummary, getOwnerNextStep } from '@/lib/tracking';
 import { Button, FieldError, Section, StateView, StatusBadge } from '@/components/ui';
 import Sheet from '@/components/Sheet';
 import ProofImage from '@/components/ProofImage';
@@ -47,7 +47,6 @@ function BusinessTrip({ role }) {
   const [trip, setTrip] = useState(null);
   const [events, setEvents] = useState([]);
   const [proofs, setProofs] = useState([]);
-  const [milestones, setMilestones] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
@@ -59,7 +58,7 @@ function BusinessTrip({ role }) {
   const generation = useRef(0), loadFlight = useRef(false);
   const [pinsOpen, setPinsOpen] = useState(false);
 
-  const [sheet, setSheet] = useState(null); // 'confirm' | 'accept' | 'lateCancel' | 'incident' | 'proof' | 'assign' | 'milestone' | 'code'
+  const [sheet, setSheet] = useState(null); // 'confirm' | 'accept' | 'lateCancel' | 'incident' | 'proof' | 'assign' | 'code'
   const [confirmStep, setConfirmStep] = useState(null);
   const [sheetError, setSheetError] = useState('');
   const [note, setNote] = useState('');
@@ -67,8 +66,6 @@ function BusinessTrip({ role }) {
   const [savedProofUrl, setSavedProofUrl] = useState('');
   const [drivers, setDrivers] = useState(null);
   const [assignment, setAssignment] = useState(null);
-  const [milestoneForm, setMilestoneForm] = useState({ name: '', lat: '', lng: '' });
-  const [milestoneErrors, setMilestoneErrors] = useState({});
 
   const load = useCallback(async ({ pull = false } = {}) => {
     if (loadFlight.current) return;
@@ -77,17 +74,15 @@ function BusinessTrip({ role }) {
     if (pull) setRefreshing(true);
     try {
       const tripData = await api.get(`/api/v1/trips/${id}`);
-      const [eventData, proofData, milestoneData, settlementData] = await Promise.all([
+      const [eventData, proofData, settlementData] = await Promise.all([
         api.get(`/api/v1/trips/${id}/journey-events`).catch(() => []),
         api.get(`/api/v1/trips/${id}/delivery-proofs`).catch(() => []),
-        api.get(`/api/v1/trips/${id}/milestones`).catch(() => []),
         api.get(`/api/v1/trips/${id}/delay-settlements`).catch(() => []),
       ]);
       if (token !== generation.current) return;
       setTrip(tripData);
       setEvents(asList(eventData).sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt)));
       setProofs(asList(proofData));
-      setMilestones(asList(milestoneData).sort((a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0)));
       setSettlements(asList(settlementData).sort((a, b) => (a.tier || 0) - (b.tier || 0)));
       setError('');
       setState('ready');
@@ -239,17 +234,6 @@ function BusinessTrip({ role }) {
   };
   const closeCode = () => { setAssignment(null); setSheet(null); };
 
-  const addMilestone = () => {
-    const result = validateMilestone(milestoneForm);
-    setMilestoneErrors(result.errors);
-    if (!result.valid) return undefined;
-    const sequenceOrder = milestones.reduce((max, item) => Math.max(max, Number(item.sequenceOrder) || 0), 0) + 1;
-    return run(async () => {
-      await api.post(`/api/v1/trips/${id}/milestones`, { ...result.value, sequenceOrder });
-      setMilestoneForm({ name: '', lat: '', lng: '' });
-    }, 'Đã thêm cột mốc.');
-  };
-
   if (state === 'loading') return <View style={styles.center}><StateView kind="loading" title="Đang tải chuyến" /></View>;
   if (state === 'forbidden') return <View style={styles.center}><StateView kind="error" title="Không có quyền xem chuyến" message="Chuyến này không thuộc tài khoản của bạn." actionLabel="Về danh sách" onAction={() => router.replace('/')} /></View>;
   if (!trip) return <View style={styles.center}><StateView kind="error" title="Không tải được chuyến" message={error} actionLabel="Thử lại" onAction={() => load()} /></View>;
@@ -264,7 +248,6 @@ function BusinessTrip({ role }) {
   const showBar = !closed && (role === 'CARRIER' || shipperAccept || trip.canCancelForLateDelivery);
   const driverText = trip.driverConnected ? 'Tài xế đã nhận chuyến bằng mã'
     : trip.driverId ? 'Đã phân công, chờ tài xế nhập mã nhận chuyến' : 'Chưa phân công';
-  const reached = milestones.filter((item) => item.status === 'REACHED').length;
 
   return (
     <View style={styles.screen}>
@@ -276,7 +259,7 @@ function BusinessTrip({ role }) {
         {actionError ? <Banner tone="danger">{actionError}</Banner> : null}
         {error ? <Text style={[type.caption, { color: colors.warning }]}>Chưa làm mới được: {error}</Text> : null}
 
-        <JourneyOverview trip={trip} events={events} milestones={milestones} nextStep={getOwnerNextStep(trip, role)}>{role === 'SHIPPER' && trip.status === 'WAITING_PICKUP' ? <Button label="Xác nhận pin kho lấy / giao" variant="secondary" onPress={() => setPinsOpen(true)} /> : null}</JourneyOverview>
+        <JourneyOverview trip={trip} events={events} nextStep={getOwnerNextStep(trip, role)}>{role === 'SHIPPER' && trip.status === 'WAITING_PICKUP' ? <Button label="Xác nhận pin kho lấy / giao" variant="secondary" onPress={() => setPinsOpen(true)} /> : null}</JourneyOverview>
 
         {completion ? (
           <Banner title="Đơn hàng đã hoàn tất">
@@ -311,20 +294,6 @@ function BusinessTrip({ role }) {
             ))}
           </Section>
         ) : null}
-
-        <Section title="Cột mốc" right={milestones.length ? <Text style={type.caption}>{reached}/{milestones.length} đã check-in</Text> : null}>
-          {milestones.length === 0 ? <Text style={type.secondary}>{role === 'CARRIER' ? 'Thêm cột mốc để tài xế check-in theo vị trí.' : 'Nhà xe chưa đặt cột mốc cho chuyến này.'}</Text> : null}
-          {milestones.map((milestone) => (
-            <View key={milestone.id} style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.strong}>{milestone.sequenceOrder}. {milestone.milestoneName}</Text>
-                <Text style={[type.caption, type.tabular]}>{milestone.reachedAt ? `Check-in ${formatDateTime(milestone.reachedAt)}` : 'Chưa đến'}</Text>
-              </View>
-              <StatusBadge label={milestone.status === 'REACHED' ? 'Đã đến' : 'Chưa đến'} tone={milestone.status === 'REACHED' ? 'success' : 'neutral'} />
-            </View>
-          ))}
-          {role === 'CARRIER' && !closed ? <Button label="Thêm cột mốc" variant="secondary" onPress={() => { setMilestoneErrors({}); openSheet('milestone'); }} /> : null}
-        </Section>
 
         {proofs.length > 0 ? (
           <Section title="Bằng chứng giao hàng">
@@ -438,24 +407,6 @@ function BusinessTrip({ role }) {
         <DriverCodeQr value={assignment?.code} />
         <Text style={styles.code} selectable>{assignment?.code}</Text>
         <Text style={type.caption}>Hết hạn {formatDateTime(assignment?.expiresAt)}. Dùng một lần; mã cũ của chuyến đã bị thu hồi.</Text>
-      </Sheet>
-
-      <Sheet visible={sheet === 'milestone'} title="Thêm cột mốc" busy={busy} onClose={closeSheet}
-        footer={<><Button label="Thêm cột mốc" onPress={addMilestone} loading={busy} /><Button label="Hủy" variant="secondary" onPress={closeSheet} disabled={busy} /></>}>
-        <TextInput accessibilityLabel="Tên cột mốc" value={milestoneForm.name} onChangeText={(name) => setMilestoneForm((form) => ({ ...form, name }))} placeholder="Ví dụ: Trạm thu phí Long Thành" placeholderTextColor={colors.inkSubtle} style={styles.input} />
-        <FieldError message={milestoneErrors.name} />
-        <View style={styles.barRow}>
-          <View style={{ flex: 1 }}>
-            <TextInput accessibilityLabel="Vĩ độ" value={milestoneForm.lat} onChangeText={(lat) => setMilestoneForm((form) => ({ ...form, lat }))} placeholder="Vĩ độ" keyboardType="numbers-and-punctuation" placeholderTextColor={colors.inkSubtle} style={styles.input} />
-            <FieldError message={milestoneErrors.lat} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <TextInput accessibilityLabel="Kinh độ" value={milestoneForm.lng} onChangeText={(lng) => setMilestoneForm((form) => ({ ...form, lng }))} placeholder="Kinh độ" keyboardType="numbers-and-punctuation" placeholderTextColor={colors.inkSubtle} style={styles.input} />
-            <FieldError message={milestoneErrors.lng} />
-          </View>
-        </View>
-        <Text style={type.caption}>Tài xế chỉ check-in được khi ở gần tọa độ này; máy chủ kiểm tra khoảng cách.</Text>
-        <FieldError message={sheetError} />
       </Sheet>
     </View>
   );

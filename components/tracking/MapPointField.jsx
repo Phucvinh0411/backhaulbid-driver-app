@@ -53,7 +53,7 @@ export default function MapPointField({ label = 'Vị trí kho', point, onChange
     {validPoint(point) && !required ? <Button label="Bỏ tọa độ kho" variant="secondary" onPress={() => onChange(null)} /> : null}
     <Sheet visible={open} title={label} onClose={close} footer={<><Button label="Xác nhận vị trí kho" onPress={confirm} /><Button label="Quay lại" variant="secondary" onPress={close} /></>}>
       <Text style={type.secondary}>{HINT_TEXT[hint]}</Text>
-      <JourneyMap picker payload={{ pickup: validPoint(draft) ? { latitude: Number(draft.latitude), longitude: Number(draft.longitude), label } : null, milestones: [], manual: [], segments: [] }} onPointSelected={pick} height={300} />
+      <JourneyMap picker payload={{ pickup: validPoint(draft) ? { latitude: Number(draft.latitude), longitude: Number(draft.longitude), label } : null, manual: [], segments: [] }} onPointSelected={pick} height={300} />
       <View style={{ flexDirection: 'row', gap: space.sm }}>
         <TextField label="Vĩ độ" style={{ flex: 1 }} value={String(draft.latitude)} keyboardType="numbers-and-punctuation" onChangeText={(latitude) => { stopSearch(); setHint('idle'); setDraft((current) => ({ ...current, latitude })); }} />
         <TextField label="Kinh độ" style={{ flex: 1 }} value={String(draft.longitude)} keyboardType="numbers-and-punctuation" onChangeText={(longitude) => { stopSearch(); setHint('idle'); setDraft((current) => ({ ...current, longitude })); }} />
