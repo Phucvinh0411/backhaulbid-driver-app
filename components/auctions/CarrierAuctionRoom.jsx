@@ -172,6 +172,13 @@ export default function CarrierAuctionRoom({ auctionId }) {
             </>
           ) : null}
           {status === 'WAITING_FOR_START' ? <Text style={[type.body, type.tabular]}>Đã đăng ký. Phòng mở sau {formatCountdown(endsIn)} ({formatDateTime(auction.startTime)}).</Text> : null}
+          {status === 'EKYC_REQUIRED' ? (
+            <>
+              <Banner tone="warning">Chủ xe phải hoàn tất xác thực eKYC người đại diện trước khi đăng ký và tham gia đấu giá.</Banner>
+              <Button label="Xác thực eKYC ngay" onPress={() => router.push('/verification')} />
+              <Button label="Mở hồ sơ doanh nghiệp" variant="secondary" onPress={() => router.push('/company')} />
+            </>
+          ) : null}
           {status === 'REPUTATION_TOO_LOW' ? <Text style={type.body}>Điểm uy tín chưa đạt mức tối thiểu. Điểm giảm khi vi phạm chính sách giao hàng trễ.</Text> : null}
           {status === 'REGISTRATION_CLOSED' ? <Text style={type.body}>Phiên đã đóng đăng ký.</Text> : null}
           {bidError && !roomOpen ? <Banner tone="danger">{bidError}</Banner> : null}
