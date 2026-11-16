@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { ActionBar, Banner, Button, Card, ChoiceChips, DateTimeField, MoneyField, Row, Screen, Section, StateView, SwitchRow, TextField, useResource, useSingleFlight } from '@/components/ui';
 import Sheet from '@/components/Sheet';
 import MapPointField from '@/components/tracking/MapPointField';
-import { addressApi, biddingApi, newKey } from '@/lib/services';
+import { accountApi, addressApi, biddingApi, newKey } from '@/lib/services';
 import { uploadImage } from '@/lib/media';
 import { GOODS_CATEGORIES, INITIAL_FORM_STATE, VEHICLE_TYPES, getCreationFeeQuote, getParticipationFeeQuote, mapFormToAuctionPayload, validateCreateAuctionForm } from '@/lib/shared/auctionForm';
 import { formatDateTime, formatMoney } from '@/lib/shared/format';
@@ -34,6 +34,7 @@ function stepError(step, form) {
 
 export default function CreateAuctionScreen() {
   const router = useRouter();
+  const ekyc = useResource(() => accountApi.representative(), []);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(INITIAL_FORM_STATE);
   const [error, setError] = useState('');
@@ -46,6 +47,33 @@ export default function CreateAuctionScreen() {
     const prefix = field.startsWith('from') ? 'from' : field.startsWith('to') ? 'to' : null;
     return { ...current, [field]: value, ...(prefix && ['Address', 'Province'].some((suffix) => field.endsWith(suffix)) ? { [`${prefix}Latitude`]: null, [`${prefix}Longitude`]: null, [`${prefix}CoordinateConfirmedAt`]: null } : {}) };
   });
+
+  if (ekyc.state === 'loading') {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+        <Stack.Screen options={{ title: 'Tạo phiên đấu giá' }} />
+        <StateView kind="loading" title="Đang kiểm tra trạng thái eKYC" />
+      </View>
+    );
+  }
+
+  if (ekyc.data?.status !== 'VERIFIED') {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+        <Stack.Screen options={{ title: 'Tạo phiên đấu giá' }} />
+        <Screen refreshing={ekyc.refreshing} onRefresh={() => ekyc.reload({ pull: true })}>
+          <StateView
+            kind="error"
+            title="Chưa xác thực eKYC"
+            message="Chủ hàng bắt buộc phải hoàn tất định danh người đại diện (eKYC) trước khi tạo phiên đấu giá mới."
+            actionLabel="Xác thực eKYC ngay"
+            onAction={() => router.push('/verification')}
+          />
+          <Button label="Kiểm tra lại trạng thái" variant="secondary" onPress={() => ekyc.reload()} />
+        </Screen>
+      </View>
+    );
+  }
 
   const next = () => {
     const message = stepError(step, form);

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Text } from 'react-native';
 import { useAuth } from '@/lib/auth';
-import { biddingApi, loadAllPages, toPage } from '@/lib/services';
+import { accountApi, biddingApi, loadAllPages, toPage } from '@/lib/services';
 import { getAuctionPhase } from '@/lib/shared/statusMeta';
 import AuctionCard from '@/components/auctions/AuctionCard';
 import { Banner, Button, Screen, StateView, Tabs, TextField, useResource } from '@/components/ui';
@@ -69,6 +69,7 @@ function CarrierAuctions() {
   const [sort, setSort] = useState('deadline');
   const [query, setQuery] = useState('');
   const [access, setAccess] = useState({});
+  const ekyc = useResource(() => accountApi.representative().catch(() => ({ status: 'NOT_SUBMITTED' })), []);
   const { data, state, error, refreshing, reload } = useResource(async () => {
     const pages = await Promise.all([
       biddingApi.list({ status: 'PENDING', page: 1, pageSize: 100 }),
@@ -99,7 +100,15 @@ function CarrierAuctions() {
   }, [auctionType, data, needle, scope, sort]);
 
   return (
-    <Screen refreshing={refreshing} onRefresh={() => reload({ pull: true })}>
+    <Screen refreshing={refreshing} onRefresh={() => { ekyc.reload(); reload({ pull: true }); }}>
+      {ekyc.state === 'ready' && ekyc.data?.status !== 'VERIFIED' ? (
+        <Banner tone="warning" title="Tài khoản chưa xác thực eKYC">
+          Chủ xe cần hoàn tất định danh người đại diện (eKYC) trước khi đăng ký và tham gia đấu giá.
+        </Banner>
+      ) : null}
+      {ekyc.state === 'ready' && ekyc.data?.status !== 'VERIFIED' ? (
+        <Button label="Xác thực eKYC ngay" onPress={() => router.push('/verification')} />
+      ) : null}
       <Text style={type.secondary}>Đấu giá ngược: đưa giá thấp hơn giá trần để nhận chuyến. Đăng ký và thanh toán trước hạn đóng đăng ký.</Text>
       <Button label="Phiên tôi đã đăng ký" variant="secondary" onPress={() => router.push('/registrations')} />
       <Tabs label="Phạm vi" value={scope} onChange={setScope} options={CARRIER_SCOPES} />
